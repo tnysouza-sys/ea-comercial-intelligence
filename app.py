@@ -1,3 +1,5 @@
+
+
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -560,52 +562,24 @@ colunas_numericas = [
 for coluna in colunas_numericas:
     df[coluna] = pd.to_numeric(df[coluna], errors="coerce").fillna(0)
 
-def converter_nota(valor):
-    valor = str(valor).strip().lower()
-
-    if valor in ["ruim", "péssimo", "pessimo"]:
-        return 1
-    elif valor == "regular":
-        return 3
-    elif valor == "bom":
-        return 4
-    elif valor in ["excelente", "ótimo", "otimo"]:
-        return 5
-    else:
-        return pd.to_numeric(valor, errors="coerce")
-
-colunas_pifpaf = [
-    "PifPaf Preço",
-    "PifPaf Qualidade",
-    "PifPaf Entrega",
-    "PifPaf Atendimento",
-    "PifPaf Variedade",
-    "PifPaf Negociação"
-]
-
-for coluna in colunas_pifpaf:
-    if coluna in df.columns:
-        df[coluna] = df[coluna].apply(converter_nota).fillna(0)
-
 # usar frequência como base de atraso operacional
 df["Índice de Atraso"] = 5 - df["Frequência Entrega"]
 
 # usar problemas atuais para estimar ruptura
-df["Problemas Atuais"] = df["Problemas Atuais"].fillna("").astype(str)
-
-df["Itens com Ruptura"] = df["Problemas Atuais"].apply(
-    lambda x: 5 if ("Ruptura" in str(x)) or ("Falta de produtos" in str(x)) else 0
+df["Itens com Ruptura"] = df["Problemas Atuais"].astype(str).apply(
+    lambda x: 5 if "Ruptura" in x or "Falta de produtos" in x else 0
 )
 
 # =========================
 # PADRONIZAR PIFPAF
 # =========================
 
-df["Concorrente"] = df["Concorrente"].fillna("Não informado").astype(str).str.strip()
-
-df["Concorrente"] = df["Concorrente"].apply(
-    lambda x: "PifPaf" if "pif" in x.lower().replace(" ", "") else x
-)
+df["Concorrente"] = df["Concorrente"].replace({
+    "pifpaf": "PifPaf",
+    "Pif paf": "PifPaf",
+    "Pif Paf": "PifPaf",
+    "pif paf": "PifPaf"
+})
 
 # st.success("✅ Dados carregados automaticamente do Google Sheets")
 
@@ -1007,9 +981,10 @@ with aba_operacao:
 # =========================
 # ABA — MAPA
 # =========================
+
 with aba_mapa:
 
-st.markdown("## Mapa Comercial")
+    st.markdown("## Mapa Comercial")
 
     df_map = df_filtrado.copy()
 
@@ -1018,18 +993,6 @@ st.markdown("## Mapa Comercial")
 
     if "Longitude" not in df_map.columns:
         df_map["Longitude"] = None
-
-    df_map["Latitude"] = (
-        df_map["Latitude"]
-        .astype(str)
-        .str.replace(",", ".", regex=False)
-    )
-
-    df_map["Longitude"] = (
-        df_map["Longitude"]
-        .astype(str)
-        .str.replace(",", ".", regex=False)
-    )
 
     df_map["Latitude"] = pd.to_numeric(
         df_map["Latitude"],
@@ -1108,7 +1071,8 @@ st.markdown("## Mapa Comercial")
 # =========================
 
 with aba_clientes:
-st.markdown(
+
+    st.markdown(
         '<div class="ea-section-title">Gargalos Detectados</div>',
         unsafe_allow_html=True
     )
@@ -1265,76 +1229,134 @@ else:
         use_container_width=True,
         hide_index=True
     )
-# =========================
-# COMPARATIVO PIFPAF
-# =========================
+    # =========================
+    # COMPARATIVO PIFPAF
+    # =========================
 
-st.markdown("---")
+    st.markdown("---")
 
-st.markdown(
-    '<div class="ea-section-title">Comparativo PifPaf x Fornecedor Atual</div>',
-    unsafe_allow_html=True
-)
+    st.markdown(
+        '<div class="ea-section-title">Comparativo PifPaf x Concorrentes</div>',
+        unsafe_allow_html=True
+    )
 
-comparativo_pifpaf = pd.DataFrame({
-    "Indicador": [
-        "Qualidade",
-        "Entrega",
-        "Atendimento"
-    ],
-
-    "Fornecedor Atual": [
-        df_filtrado["Qualidade"].mean(),
-        df_filtrado["Frequência Entrega"].mean(),
-        df_filtrado["Atendimento Atual"].mean()
-    ],
-
-    "PifPaf": [
-        df_filtrado["PifPaf Qualidade"].mean(),
-        df_filtrado["PifPaf Entrega"].mean(),
-        df_filtrado["PifPaf Atendimento"].mean()
+    df_pifpaf = df_filtrado[
+        df_filtrado["Concorrente"] == "PifPaf"
     ]
-})
 
-comparativo_melt = comparativo_pifpaf.melt(
-    id_vars="Indicador",
-    var_name="Grupo",
-    value_name="Nota"
-)
+    df_concorrentes = df_filtrado[
+        df_filtrado["Concorrente"] != "PifPaf"
+    ]
 
-fig_comp = px.bar(
-    comparativo_melt,
-    x="Indicador",
-    y="Nota",
-    color="Grupo",
-    barmode="group",
-    text="Nota",
-    title="PifPaf x Fornecedor Atual"
-)
+    if not df_pifpaf.empty and not df_concorrentes.empty:
 
-fig_comp.update_traces(
-    texttemplate="%{text:.2f}",
-    textposition="outside"
-)
+        atraso_pifpaf = df_pifpaf["Índice de Atraso"].mean()
+        qualidade_pifpaf = df_pifpaf["Qualidade"].mean()
+        ruptura_pifpaf = df_pifpaf["Itens com Ruptura"].mean()
 
-fig_comp.update_layout(
-    height=460,
-    yaxis=dict(range=[0, 5]),
-    template="plotly_dark"
-)
+        atraso_concorrente = df_concorrentes["Índice de Atraso"].mean()
+        qualidade_concorrente = df_concorrentes["Qualidade"].mean()
+        ruptura_concorrente = df_concorrentes["Itens com Ruptura"].mean()
 
-st.plotly_chart(
-    fig_comp,
-    use_container_width=True
-)
+        col1, col2, col3 = st.columns(3)
 
-# =========================
-# OPORTUNIDADES E AÇÕES RECOMENDADAS
-# =========================
+        with col1:
 
-st.markdown("---")
+            st.markdown("### Índice de Atraso")
 
-st.markdown(
+            st.write(
+                f"PifPaf: {round(atraso_pifpaf, 2)}"
+            )
+
+            st.write(
+                f"Concorrentes: {round(atraso_concorrente, 2)}"
+            )
+
+            if atraso_pifpaf < atraso_concorrente:
+
+                st.success(
+                    "A PifPaf apresenta melhor desempenho logístico em atrasos."
+                )
+
+            else:
+
+                st.error(
+                    "A PifPaf apresenta maior índice de atraso que os concorrentes."
+                )
+
+        with col2:
+
+            st.markdown("### Qualidade")
+
+            st.write(
+                f"PifPaf: {round(qualidade_pifpaf, 2)}"
+            )
+
+            st.write(
+                f"Concorrentes: {round(qualidade_concorrente, 2)}"
+            )
+
+            if qualidade_pifpaf > qualidade_concorrente:
+
+                st.success(
+                    "A PifPaf apresenta melhor qualidade operacional."
+                )
+
+            elif qualidade_pifpaf == qualidade_concorrente:
+
+                st.info(
+                    "A PifPaf apresenta qualidade equivalente aos concorrentes."
+                )
+
+            else:
+
+                st.warning(
+                    "Os concorrentes apresentam qualidade superior à PifPaf."
+                )
+
+        with col3:
+
+            st.markdown("### Rupturas")
+
+            st.write(
+                f"PifPaf: {round(ruptura_pifpaf, 2)}"
+            )
+
+            st.write(
+                f"Concorrentes: {round(ruptura_concorrente, 2)}"
+            )
+
+            if ruptura_pifpaf < ruptura_concorrente:
+
+                st.success(
+                    "A PifPaf apresenta melhor estabilidade de abastecimento."
+                )
+
+            elif ruptura_pifpaf == ruptura_concorrente:
+
+                st.info(
+                    "A PifPaf apresenta ruptura equivalente aos concorrentes."
+                )
+
+            else:
+
+                st.error(
+                    "A PifPaf apresenta maior índice de rupturas."
+                )
+
+    else:
+
+        st.warning(
+            "Adicione registros da PifPaf e concorrentes para comparação."
+        )
+
+    # =========================
+    # OPORTUNIDADES E AÇÕES RECOMENDADAS
+    # =========================
+
+    st.markdown("---")
+
+    st.markdown(
         '<div class="ea-section-title">Oportunidades e Ações Recomendadas</div>',
         unsafe_allow_html=True
     )
@@ -1689,31 +1711,31 @@ with aba_inteligencia:
     # OPORTUNIDADES PIFPAF
     # =========================
 
-st.markdown("---")
-st.subheader("O que faria comprar mais da PifPaf")
+    st.markdown("---")
+    st.subheader("O que faria comprar mais da PifPaf")
 
-oportunidades = (
-    df_filtrado["Oportunidade PifPaf"]
-    .astype(str)
-    .str.split(",")
-    .explode()
-    .str.strip()
-    .value_counts()
-    .reset_index()
-)
+    oportunidades = (
+        df_filtrado["Oportunidade PifPaf"]
+        .astype(str)
+        .str.split(",")
+        .explode()
+        .str.strip()
+        .value_counts()
+        .reset_index()
+    )
 
-oportunidades.columns = ["Oportunidade", "Quantidade"]
+    oportunidades.columns = ["Oportunidade", "Quantidade"]
 
-fig_oportunidades = px.bar(
-    oportunidades,
-    x="Oportunidade",
-    y="Quantidade",
-    color="Quantidade",
-    template="plotly_dark",
-    title="Oportunidades de crescimento PifPaf"
-)
+    fig_oportunidades = px.bar(
+        oportunidades,
+        x="Oportunidade",
+        y="Quantidade",
+        color="Quantidade",
+        template="plotly_dark",
+        title="Oportunidades de crescimento PifPaf"
+    )
 
-st.plotly_chart(fig_oportunidades, use_container_width=True)
+    st.plotly_chart(fig_oportunidades, use_container_width=True)
 
     # =========================
     # DIFICULDADES PIFPAF
@@ -2085,7 +2107,7 @@ with aba_relatorio:
 
         elementos.append(Spacer(1, 20))
 
-        # =========================
+                # =========================
         # KPIs DO RELATÓRIO
         # =========================
 
