@@ -574,12 +574,11 @@ df["Itens com Ruptura"] = df["Problemas Atuais"].apply(
 # PADRONIZAR PIFPAF
 # =========================
 
-df["Concorrente"] = df["Concorrente"].replace({
-    "pifpaf": "PifPaf",
-    "Pif paf": "PifPaf",
-    "Pif Paf": "PifPaf",
-    "pif paf": "PifPaf"
-})
+df["Concorrente"] = df["Concorrente"].fillna("Não informado").astype(str).str.strip()
+
+df["Concorrente"] = df["Concorrente"].apply(
+    lambda x: "PifPaf" if "pif" in x.lower().replace(" ", "") else x
+)
 
 # st.success("✅ Dados carregados automaticamente do Google Sheets")
 
