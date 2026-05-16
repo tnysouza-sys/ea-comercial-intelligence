@@ -560,6 +560,33 @@ colunas_numericas = [
 for coluna in colunas_numericas:
     df[coluna] = pd.to_numeric(df[coluna], errors="coerce").fillna(0)
 
+def converter_nota(valor):
+    valor = str(valor).strip().lower()
+
+    if valor in ["ruim", "péssimo", "pessimo"]:
+        return 1
+    elif valor == "regular":
+        return 3
+    elif valor == "bom":
+        return 4
+    elif valor in ["excelente", "ótimo", "otimo"]:
+        return 5
+    else:
+        return pd.to_numeric(valor, errors="coerce")
+
+colunas_pifpaf = [
+    "PifPaf Preço",
+    "PifPaf Qualidade",
+    "PifPaf Entrega",
+    "PifPaf Atendimento",
+    "PifPaf Variedade",
+    "PifPaf Negociação"
+]
+
+for coluna in colunas_pifpaf:
+    if coluna in df.columns:
+        df[coluna] = df[coluna].apply(converter_nota).fillna(0)
+
 # usar frequência como base de atraso operacional
 df["Índice de Atraso"] = 5 - df["Frequência Entrega"]
 
@@ -1239,126 +1266,68 @@ else:
         use_container_width=True,
         hide_index=True
     )
-    # =========================
-    # COMPARATIVO PIFPAF
-    # =========================
+   # =========================
+# COMPARATIVO PIFPAF
+# =========================
 
-    st.markdown("---")
+st.markdown("---")
 
-    st.markdown(
-        '<div class="ea-section-title">Comparativo PifPaf x Concorrentes</div>',
-        unsafe_allow_html=True
-    )
+st.markdown(
+    '<div class="ea-section-title">Comparativo PifPaf x Fornecedor Atual</div>',
+    unsafe_allow_html=True
+)
 
-    df_pifpaf = df_filtrado[
-        df_filtrado["Concorrente"] == "PifPaf"
+comparativo_pifpaf = pd.DataFrame({
+    "Indicador": [
+        "Qualidade",
+        "Entrega",
+        "Atendimento"
+    ],
+
+    "Fornecedor Atual": [
+        df_filtrado["Qualidade"].mean(),
+        df_filtrado["Frequência Entrega"].mean(),
+        df_filtrado["Atendimento Atual"].mean()
+    ],
+
+    "PifPaf": [
+        df_filtrado["PifPaf Qualidade"].mean(),
+        df_filtrado["PifPaf Entrega"].mean(),
+        df_filtrado["PifPaf Atendimento"].mean()
     ]
+})
 
-    df_concorrentes = df_filtrado[
-        df_filtrado["Concorrente"] != "PifPaf"
-    ]
+comparativo_melt = comparativo_pifpaf.melt(
+    id_vars="Indicador",
+    var_name="Grupo",
+    value_name="Nota"
+)
 
-    if not df_pifpaf.empty and not df_concorrentes.empty:
+fig_comp = px.bar(
+    comparativo_melt,
+    x="Indicador",
+    y="Nota",
+    color="Grupo",
+    barmode="group",
+    text="Nota",
+    title="PifPaf x Fornecedor Atual"
+)
 
-        atraso_pifpaf = df_pifpaf["Índice de Atraso"].mean()
-        qualidade_pifpaf = df_pifpaf["Qualidade"].mean()
-        ruptura_pifpaf = df_pifpaf["Itens com Ruptura"].mean()
+fig_comp.update_traces(
+    texttemplate="%{text:.2f}",
+    textposition="outside"
+)
 
-        atraso_concorrente = df_concorrentes["Índice de Atraso"].mean()
-        qualidade_concorrente = df_concorrentes["Qualidade"].mean()
-        ruptura_concorrente = df_concorrentes["Itens com Ruptura"].mean()
+fig_comp.update_layout(
+    height=460,
+    yaxis=dict(range=[0, 5]),
+    template="plotly_dark"
+)
 
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-
-            st.markdown("### Índice de Atraso")
-
-            st.write(
-                f"PifPaf: {round(atraso_pifpaf, 2)}"
-            )
-
-            st.write(
-                f"Concorrentes: {round(atraso_concorrente, 2)}"
-            )
-
-            if atraso_pifpaf < atraso_concorrente:
-
-                st.success(
-                    "A PifPaf apresenta melhor desempenho logístico em atrasos."
-                )
-
-            else:
-
-                st.error(
-                    "A PifPaf apresenta maior índice de atraso que os concorrentes."
-                )
-
-        with col2:
-
-            st.markdown("### Qualidade")
-
-            st.write(
-                f"PifPaf: {round(qualidade_pifpaf, 2)}"
-            )
-
-            st.write(
-                f"Concorrentes: {round(qualidade_concorrente, 2)}"
-            )
-
-            if qualidade_pifpaf > qualidade_concorrente:
-
-                st.success(
-                    "A PifPaf apresenta melhor qualidade operacional."
-                )
-
-            elif qualidade_pifpaf == qualidade_concorrente:
-
-                st.info(
-                    "A PifPaf apresenta qualidade equivalente aos concorrentes."
-                )
-
-            else:
-
-                st.warning(
-                    "Os concorrentes apresentam qualidade superior à PifPaf."
-                )
-
-        with col3:
-
-            st.markdown("### Rupturas")
-
-            st.write(
-                f"PifPaf: {round(ruptura_pifpaf, 2)}"
-            )
-
-            st.write(
-                f"Concorrentes: {round(ruptura_concorrente, 2)}"
-            )
-
-            if ruptura_pifpaf < ruptura_concorrente:
-
-                st.success(
-                    "A PifPaf apresenta melhor estabilidade de abastecimento."
-                )
-
-            elif ruptura_pifpaf == ruptura_concorrente:
-
-                st.info(
-                    "A PifPaf apresenta ruptura equivalente aos concorrentes."
-                )
-
-            else:
-
-                st.error(
-                    "A PifPaf apresenta maior índice de rupturas."
-                )
-
-    else:
-
-        st.warning(
-            "Adicione registros da PifPaf e concorrentes para comparação."
-        )
+st.plotly_chart(
+    fig_comp,
+    use_container_width=True
+)
 
     # =========================
     # OPORTUNIDADES E AÇÕES RECOMENDADAS
