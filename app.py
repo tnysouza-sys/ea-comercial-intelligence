@@ -1278,7 +1278,6 @@ st.markdown(
 )
 
 comparativo_pifpaf = pd.DataFrame({
-
     "Indicador": [
         "Qualidade",
         "Entrega",
