@@ -981,7 +981,6 @@ with aba_operacao:
 # =========================
 # ABA — MAPA
 # =========================
-
 with aba_mapa:
 
     st.markdown("## Mapa Comercial")
@@ -995,26 +994,26 @@ with aba_mapa:
         df_map["Longitude"] = None
 
     df_map["Latitude"] = (
-    df_map["Latitude"]
-    .astype(str)
-    .str.replace(",", ".", regex=False)
-)
+        df_map["Latitude"]
+        .astype(str)
+        .str.replace(",", ".", regex=False)
+    )
 
-df_map["Longitude"] = (
-    df_map["Longitude"]
-    .astype(str)
-    .str.replace(",", ".", regex=False)
-)
+    df_map["Longitude"] = (
+        df_map["Longitude"]
+        .astype(str)
+        .str.replace(",", ".", regex=False)
+    )
 
-df_map["Latitude"] = pd.to_numeric(
-    df_map["Latitude"],
-    errors="coerce"
-)
+    df_map["Latitude"] = pd.to_numeric(
+        df_map["Latitude"],
+        errors="coerce"
+    )
 
-df_map["Longitude"] = pd.to_numeric(
-    df_map["Longitude"],
-    errors="coerce"
-)
+    df_map["Longitude"] = pd.to_numeric(
+        df_map["Longitude"],
+        errors="coerce"
+    )
 
     df_map = df_map.dropna(
         subset=["Latitude", "Longitude"]
