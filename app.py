@@ -564,8 +564,10 @@ for coluna in colunas_numericas:
 df["Índice de Atraso"] = 5 - df["Frequência Entrega"]
 
 # usar problemas atuais para estimar ruptura
-df["Itens com Ruptura"] = df["Problemas Atuais"].astype(str).apply(
-    lambda x: 5 if "Ruptura" in x or "Falta de produtos" in x else 0
+df["Problemas Atuais"] = df["Problemas Atuais"].fillna("").astype(str)
+
+df["Itens com Ruptura"] = df["Problemas Atuais"].apply(
+    lambda x: 5 if ("Ruptura" in str(x)) or ("Falta de produtos" in str(x)) else 0
 )
 
 # =========================
