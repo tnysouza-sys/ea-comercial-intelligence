@@ -1009,7 +1009,7 @@ with aba_operacao:
 # =========================
 with aba_mapa:
 
-    st.markdown("## Mapa Comercial")
+st.markdown("## Mapa Comercial")
 
     df_map = df_filtrado.copy()
 
@@ -1108,8 +1108,7 @@ with aba_mapa:
 # =========================
 
 with aba_clientes:
-
-    st.markdown(
+st.markdown(
         '<div class="ea-section-title">Gargalos Detectados</div>',
         unsafe_allow_html=True
     )
