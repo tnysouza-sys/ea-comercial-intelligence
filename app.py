@@ -1333,9 +1333,9 @@ st.plotly_chart(
 # OPORTUNIDADES E AÇÕES RECOMENDADAS
 # =========================
 
-    st.markdown("---")
+st.markdown("---")
 
-    st.markdown(
+st.markdown(
         '<div class="ea-section-title">Oportunidades e Ações Recomendadas</div>',
         unsafe_allow_html=True
     )
