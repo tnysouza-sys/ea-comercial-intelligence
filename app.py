@@ -1266,7 +1266,7 @@ else:
         use_container_width=True,
         hide_index=True
     )
-   # =========================
+# =========================
 # COMPARATIVO PIFPAF
 # =========================
 
@@ -1278,6 +1278,7 @@ st.markdown(
 )
 
 comparativo_pifpaf = pd.DataFrame({
+
     "Indicador": [
         "Qualidade",
         "Entrega",
@@ -1329,9 +1330,9 @@ st.plotly_chart(
     use_container_width=True
 )
 
-    # =========================
-    # OPORTUNIDADES E AÇÕES RECOMENDADAS
-    # =========================
+# =========================
+# OPORTUNIDADES E AÇÕES RECOMENDADAS
+# =========================
 
     st.markdown("---")
 
@@ -2086,7 +2087,7 @@ with aba_relatorio:
 
         elementos.append(Spacer(1, 20))
 
-                # =========================
+        # =========================
         # KPIs DO RELATÓRIO
         # =========================
 
