@@ -1690,31 +1690,31 @@ with aba_inteligencia:
     # OPORTUNIDADES PIFPAF
     # =========================
 
-    st.markdown("---")
-    st.subheader("O que faria comprar mais da PifPaf")
+st.markdown("---")
+st.subheader("O que faria comprar mais da PifPaf")
 
-    oportunidades = (
-        df_filtrado["Oportunidade PifPaf"]
-        .astype(str)
-        .str.split(",")
-        .explode()
-        .str.strip()
-        .value_counts()
-        .reset_index()
-    )
+oportunidades = (
+    df_filtrado["Oportunidade PifPaf"]
+    .astype(str)
+    .str.split(",")
+    .explode()
+    .str.strip()
+    .value_counts()
+    .reset_index()
+)
 
-    oportunidades.columns = ["Oportunidade", "Quantidade"]
+oportunidades.columns = ["Oportunidade", "Quantidade"]
 
-    fig_oportunidades = px.bar(
-        oportunidades,
-        x="Oportunidade",
-        y="Quantidade",
-        color="Quantidade",
-        template="plotly_dark",
-        title="Oportunidades de crescimento PifPaf"
-    )
+fig_oportunidades = px.bar(
+    oportunidades,
+    x="Oportunidade",
+    y="Quantidade",
+    color="Quantidade",
+    template="plotly_dark",
+    title="Oportunidades de crescimento PifPaf"
+)
 
-    st.plotly_chart(fig_oportunidades, use_container_width=True)
+st.plotly_chart(fig_oportunidades, use_container_width=True)
 
     # =========================
     # DIFICULDADES PIFPAF
