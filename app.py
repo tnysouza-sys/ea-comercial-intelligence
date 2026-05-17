@@ -45,12 +45,12 @@ FUNDO GERAL
 ========================= */
 
 .stApp {
-    background: linear-gradient(
-        135deg,
-        #111827,
-        #1f2937
-    );
-    color: white;
+    background-color: #111827 !important;
+    color: white !important;
+}
+.main .block-container {
+    background-color: #111827 !important;
+    color: white !important;
 }
 
 /* =========================
@@ -128,12 +128,16 @@ MÉTRICAS
 ========================= */
 
 [data-testid="metric-container"] {
-    background: rgba(255,255,255,0.04);
-    border-radius: 12px;
-    padding: 10px;
+    background: #1f2937 !important;
+    border-radius: 14px;
+    padding: 14px;
     border: 1px solid rgba(255,255,255,0.08);
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
-
+[data-testid="metric-container"] * {
+    color: white !important;
+}
 /* =========================
 LABELS
 ========================= */
