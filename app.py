@@ -1954,204 +1954,267 @@ with aba_inteligencia:
         hide_index=True
     )
 # =========================
-# ABA 5 — RELATÓRIO
+# ABA 5 — RELATÓRIO / APRESENTAÇÃO
 # =========================
+
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.enum.text import PP_ALIGN
+from pptx.dml.color import RGBColor
+from io import BytesIO
 
 with aba_relatorio:
 
     st.markdown(
-        '<div class="ea-section-title">Relatório Executivo</div>',
+        '<div class="ea-section-title">Apresentação Executiva</div>',
         unsafe_allow_html=True
     )
 
-    if st.button("Gerar Relatório PDF"):
+    if st.button("Gerar Apresentação PowerPoint"):
+
+        prs = Presentation()
+        prs.slide_width = Inches(13.33)
+        prs.slide_height = Inches(7.5)
+
+        vermelho = RGBColor(153, 27, 27)
+        preto = RGBColor(17, 24, 39)
+        cinza = RGBColor(107, 114, 128)
+
+        def add_title(slide, title, subtitle=""):
+            box = slide.shapes.add_textbox(Inches(0.6), Inches(0.4), Inches(12), Inches(0.8))
+            tf = box.text_frame
+            tf.text = title
+            p = tf.paragraphs[0]
+            p.font.size = Pt(30)
+            p.font.bold = True
+            p.font.color.rgb = preto
+
+            if subtitle:
+                sub = slide.shapes.add_textbox(Inches(0.65), Inches(1.15), Inches(11.5), Inches(0.4))
+                sub_tf = sub.text_frame
+                sub_tf.text = subtitle
+                sub_tf.paragraphs[0].font.size = Pt(14)
+                sub_tf.paragraphs[0].font.color.rgb = cinza
+
+        def add_metric(slide, x, y, title, value):
+            shape = slide.shapes.add_shape(
+                1, Inches(x), Inches(y), Inches(2.4), Inches(1.1)
+            )
+            shape.fill.solid()
+            shape.fill.fore_color.rgb = RGBColor(245, 245, 245)
+            shape.line.color.rgb = RGBColor(220, 220, 220)
+
+            tf = shape.text_frame
+            tf.text = title
+            tf.paragraphs[0].font.size = Pt(11)
+            tf.paragraphs[0].font.color.rgb = cinza
+
+            p = tf.add_paragraph()
+            p.text = str(value)
+            p.font.size = Pt(24)
+            p.font.bold = True
+            p.font.color.rgb = vermelho
 
         total_clientes = len(df_filtrado)
         volume_total = df_filtrado["Volume Mensal"].sum()
-        score_fornecedor = df_filtrado["Score Fornecedor Atual"].mean()
-        score_pifpaf = df_filtrado["Score PifPaf"].mean()
-        vantagem_media = df_filtrado["Vantagem PifPaf"].mean()
+        score_fornecedor = round(df_filtrado["Score Fornecedor Atual"].mean(), 2)
+        score_pifpaf = round(df_filtrado["Score PifPaf"].mean(), 2)
+        vantagem_media = round(df_filtrado["Vantagem PifPaf"].mean(), 2)
 
-        clientes_alto = len(
-            df_filtrado[df_filtrado["Potencial"] == "Alto"]
-        )
-
-        # GRÁFICO COMPARATIVO
-        comparativo_pdf = pd.DataFrame({
-            "Grupo": ["Fornecedor Atual", "PifPaf"],
-            "Score Médio": [score_fornecedor, score_pifpaf]
-        })
-
-        fig_pdf, ax_pdf = plt.subplots(figsize=(8, 4))
-
-        comparativo_pdf.plot(
-            x="Grupo",
-            y="Score Médio",
-            kind="bar",
-            ax=ax_pdf,
-            legend=False
-        )
-
-        plt.title("Comparativo Médio — Fornecedor Atual x PifPaf")
-        plt.ylabel("Score Médio")
-        plt.ylim(0, 5)
-        plt.tight_layout()
-        plt.savefig("grafico_comparativo.png")
-        plt.close()
-
-        pdf = SimpleDocTemplate(
-            "relatorio_executivo.pdf",
-            pagesize=A4,
-            rightMargin=30,
-            leftMargin=30,
-            topMargin=30,
-            bottomMargin=30
-        )
-
-        elementos = []
-        estilos = getSampleStyleSheet()
-
-        elementos.append(
-            Paragraph(
-                "<font size=20><b>RELATÓRIO EXECUTIVO — EA INTELLIGENCE</b></font>",
-                estilos["Title"]
-            )
-        )
-
-        elementos.append(Spacer(1, 20))
-
-        elementos.append(
-            Paragraph(
-                "EA Comercial Intelligence<br/>CRM Analítico Comercial e Operacional",
-                estilos["BodyText"]
-            )
-        )
-
-        elementos.append(Spacer(1, 25))
-
-        elementos.append(
-            Paragraph("<b>Resumo Executivo</b>", estilos["Heading2"])
-        )
-
-        resumo_texto = (
-            f"Foram analisados {total_clientes} clientes na base filtrada. "
-            f"O score médio do fornecedor atual foi {round(score_fornecedor, 2)}, "
-            f"enquanto o score médio da PifPaf foi {round(score_pifpaf, 2)}. "
-            f"A vantagem média da PifPaf foi de {round(vantagem_media, 2)} ponto(s). "
-            "O relatório compara a percepção do cliente sobre o fornecedor atual "
-            "com a percepção da PifPaf, considerando qualidade, entrega, atendimento, "
-            "preço, variedade e negociação."
-        )
-
-        elementos.append(Paragraph(resumo_texto, estilos["BodyText"]))
-        elementos.append(Spacer(1, 20))
-
-        elementos.append(
-            Paragraph("<b>Indicadores Estratégicos</b>", estilos["Heading2"])
-        )
-
-        dados_kpi = [
-            ["Indicador", "Resultado"],
-            ["Total de Clientes", total_clientes],
-            ["Score Fornecedor Atual", round(score_fornecedor, 2)],
-            ["Score PifPaf", round(score_pifpaf, 2)],
-            ["Vantagem Média PifPaf", round(vantagem_media, 2)],
-            ["Clientes Alto Potencial", clientes_alto],
-            ["Volume Mensal", f"R$ {volume_total:,.0f}"]
+        oportunidades = df_filtrado[
+            df_filtrado["Diagnóstico Comparativo"] == "PifPaf melhor posicionada"
         ]
 
-        tabela_kpi = Table(dados_kpi, colWidths=[220, 220])
-
-        tabela_kpi.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#991b1b")),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
-            ("FONTSIZE", (0, 0), (-1, -1), 9)
-        ]))
-
-        elementos.append(tabela_kpi)
-        elementos.append(Spacer(1, 20))
-
-        elementos.append(
-            Paragraph("<b>Análise Gráfica</b>", estilos["Heading2"])
-        )
-
-        elementos.append(Spacer(1, 10))
-
-        elementos.append(
-            Image(
-                "grafico_comparativo.png",
-                width=450,
-                height=250
-            )
-        )
-
-        elementos.append(Spacer(1, 20))
-
-        elementos.append(
-            Paragraph("<b>Ranking Comparativo por Cliente</b>", estilos["Heading2"])
-        )
-
-        colunas_pdf = [
-            "Cliente",
-            "Concorrente",
-            "Cidade",
-            "Score Fornecedor Atual",
-            "Score PifPaf",
-            "Vantagem PifPaf",
-            "Diagnóstico Comparativo"
+        gargalos = df_filtrado[
+            df_filtrado["Diagnóstico Comparativo"] == "Fornecedor atual melhor posicionado"
         ]
 
-        colunas_pdf_existentes = [
-            coluna for coluna in colunas_pdf
-            if coluna in df_filtrado.columns
+        equilibrados = df_filtrado[
+            df_filtrado["Diagnóstico Comparativo"] == "Disputa equilibrada"
         ]
 
-        tabela_pdf = df_filtrado[colunas_pdf_existentes].copy()
+        # SLIDE 1
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        add_title(slide, "EA Comercial Intelligence", "Apresentação Executiva — Análise PifPaf x Fornecedor Atual")
 
-        if "Vantagem PifPaf" in tabela_pdf.columns:
-            tabela_pdf = tabela_pdf.sort_values(
-                by="Vantagem PifPaf",
-                ascending=False
-            )
+        tx = slide.shapes.add_textbox(Inches(0.8), Inches(2.0), Inches(11.5), Inches(2.0))
+        tf = tx.text_frame
+        tf.text = "Diagnóstico comercial, competitivo e operacional com base nas respostas do Forms."
+        tf.paragraphs[0].font.size = Pt(24)
+        tf.paragraphs[0].font.bold = True
+        tf.paragraphs[0].font.color.rgb = preto
 
-        dados_tabela = [tabela_pdf.columns.tolist()] + tabela_pdf.values.tolist()
+        add_metric(slide, 0.8, 4.2, "Clientes", total_clientes)
+        add_metric(slide, 3.4, 4.2, "Score Fornecedor", score_fornecedor)
+        add_metric(slide, 6.0, 4.2, "Score PifPaf", score_pifpaf)
+        add_metric(slide, 8.6, 4.2, "Vantagem PifPaf", vantagem_media)
 
-        tabela = Table(dados_tabela, repeatRows=1)
+        # SLIDE 2
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        add_title(slide, "Resumo Estratégico", "Leitura geral da base analisada")
 
-        tabela.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#991b1b")),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 7),
-            ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ("BACKGROUND", (0, 1), (-1, -1), colors.beige)
-        ]))
+        resumo = f"""
+Foram analisados {total_clientes} clientes.
 
-        elementos.append(tabela)
-        elementos.append(Spacer(1, 20))
+Score médio do fornecedor atual: {score_fornecedor}
+Score médio da PifPaf: {score_pifpaf}
+Vantagem média da PifPaf: {vantagem_media}
 
-        elementos.append(
-            Paragraph("<b>Conclusão Estratégica</b>", estilos["Heading2"])
+Clientes onde a PifPaf está melhor posicionada: {len(oportunidades)}
+Clientes onde o fornecedor atual lidera: {len(gargalos)}
+Clientes em disputa equilibrada: {len(equilibrados)}
+
+Volume mensal estimado: R$ {volume_total:,.0f}
+"""
+
+        box = slide.shapes.add_textbox(Inches(0.8), Inches(1.6), Inches(11.8), Inches(4.8))
+        tf = box.text_frame
+        tf.text = resumo
+        for p in tf.paragraphs:
+            p.font.size = Pt(18)
+            p.font.color.rgb = preto
+
+        # SLIDE 3
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        add_title(slide, "Comparativo Geral", "Fornecedor Atual x PifPaf")
+
+        rows = 3
+        cols = 3
+        table = slide.shapes.add_table(rows, cols, Inches(1), Inches(1.8), Inches(11), Inches(1.8)).table
+
+        headers = ["Indicador", "Fornecedor Atual", "PifPaf"]
+        values = [
+            ["Score Médio", score_fornecedor, score_pifpaf],
+            ["Diferença", "-", vantagem_media]
+        ]
+
+        for i, h in enumerate(headers):
+            table.cell(0, i).text = h
+
+        for r, row in enumerate(values, start=1):
+            for c, val in enumerate(row):
+                table.cell(r, c).text = str(val)
+
+        for row in table.rows:
+            for cell in row.cells:
+                cell.text_frame.paragraphs[0].font.size = Pt(14)
+
+        # SLIDE 4
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        add_title(slide, "Ranking Comparativo por Cliente", "Clientes ordenados pela vantagem da PifPaf")
+
+        ranking = df_filtrado[
+            [
+                "Cliente",
+                "Concorrente",
+                "Cidade",
+                "Score Fornecedor Atual",
+                "Score PifPaf",
+                "Vantagem PifPaf",
+                "Diagnóstico Comparativo"
+            ]
+        ].sort_values(by="Vantagem PifPaf", ascending=False).head(8)
+
+        table = slide.shapes.add_table(
+            len(ranking) + 1,
+            7,
+            Inches(0.3),
+            Inches(1.5),
+            Inches(12.7),
+            Inches(4.8)
+        ).table
+
+        headers = list(ranking.columns)
+
+        for c, h in enumerate(headers):
+            table.cell(0, c).text = h
+
+        for r, (_, row) in enumerate(ranking.iterrows(), start=1):
+            for c, h in enumerate(headers):
+                table.cell(r, c).text = str(round(row[h], 2)) if isinstance(row[h], float) else str(row[h])
+
+        for row in table.rows:
+            for cell in row.cells:
+                cell.text_frame.paragraphs[0].font.size = Pt(8)
+
+        # SLIDE 5
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        add_title(slide, "Maiores Oportunidades", "Clientes onde a PifPaf está melhor posicionada")
+
+        texto = ""
+        if oportunidades.empty:
+            texto = "Nenhuma oportunidade clara identificada no momento."
+        else:
+            for _, row in oportunidades.head(6).iterrows():
+                texto += f"• {row['Cliente']} — {row['Cidade']} | Vantagem: {round(row['Vantagem PifPaf'], 2)}\n"
+
+        box = slide.shapes.add_textbox(Inches(0.8), Inches(1.6), Inches(11.8), Inches(4.8))
+        tf = box.text_frame
+        tf.text = texto
+        for p in tf.paragraphs:
+            p.font.size = Pt(18)
+
+        # SLIDE 6
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        add_title(slide, "Gargalos Estratégicos", "Clientes onde o fornecedor atual ainda lidera")
+
+        texto = ""
+        if gargalos.empty:
+            texto = "Nenhum gargalo estratégico crítico identificado."
+        else:
+            for _, row in gargalos.head(6).iterrows():
+                texto += f"• {row['Cliente']} — {row['Concorrente']} | Diferença: {round(row['Vantagem PifPaf'], 2)}\n"
+
+        box = slide.shapes.add_textbox(Inches(0.8), Inches(1.6), Inches(11.8), Inches(4.8))
+        tf = box.text_frame
+        tf.text = texto
+        for p in tf.paragraphs:
+            p.font.size = Pt(18)
+
+        # SLIDE 7
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        add_title(slide, "Plano de Ação Comercial", "Recomendações práticas")
+
+        plano = """
+1. Priorizar clientes onde a PifPaf já aparece melhor posicionada.
+2. Criar abordagem consultiva para clientes em disputa equilibrada.
+3. Para clientes onde o fornecedor atual lidera, reforçar preço, entrega, variedade e negociação.
+4. Trabalhar propostas por categoria de maior volume.
+5. Acompanhar evolução dos scores a cada nova pesquisa.
+"""
+
+        box = slide.shapes.add_textbox(Inches(0.8), Inches(1.5), Inches(11.8), Inches(4.8))
+        tf = box.text_frame
+        tf.text = plano
+        for p in tf.paragraphs:
+            p.font.size = Pt(19)
+
+        # SLIDE 8
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        add_title(slide, "Conclusão Estratégica", "EA Comercial Intelligence")
+
+        conclusao = """
+A análise permite identificar com clareza onde a PifPaf possui vantagem competitiva,
+onde há disputa equilibrada e onde o fornecedor atual ainda está mais forte.
+
+O modelo transforma respostas do Forms em inteligência comercial prática,
+orientando visitas, negociações e priorização de clientes.
+"""
+
+        box = slide.shapes.add_textbox(Inches(0.8), Inches(1.7), Inches(11.8), Inches(4.8))
+        tf = box.text_frame
+        tf.text = conclusao
+        for p in tf.paragraphs:
+            p.font.size = Pt(22)
+            p.font.color.rgb = preto
+
+        arquivo_pptx = BytesIO()
+        prs.save(arquivo_pptx)
+        arquivo_pptx.seek(0)
+
+        st.download_button(
+            label="Baixar Apresentação PowerPoint",
+            data=arquivo_pptx,
+            file_name="apresentacao_ea_intelligence.pptx",
+            mime="application/vnd.openxmlformats-officedocument.presentationml.presentation"
         )
-
-        conclusao = (
-            "A análise permite identificar, cliente por cliente, onde a PifPaf "
-            "está melhor posicionada frente ao fornecedor atual e onde ainda há "
-            "necessidade de reforço comercial, operacional ou de negociação."
-        )
-
-        elementos.append(Paragraph(conclusao, estilos["BodyText"]))
-
-        pdf.build(elementos)
-
-        with open("relatorio_executivo.pdf", "rb") as arquivo:
-
-            st.download_button(
-                label="Baixar Relatório Executivo",
-                data=arquivo,
-                file_name="relatorio_executivo.pdf",
-                mime="application/pdf"
-            )
