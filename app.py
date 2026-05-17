@@ -2025,6 +2025,8 @@ with aba_inteligencia:
     st.markdown("---")
     st.subheader("Matriz de Oportunidade Comercial")
 
+    ranking["Score Conversão Ajustado"] = ranking["Score Conversão"].clip(lower=1)
+
     fig_bubble = px.scatter(
         ranking,
         x="Volume Mensal",
