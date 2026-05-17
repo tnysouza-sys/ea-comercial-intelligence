@@ -1687,40 +1687,48 @@ with aba_inteligencia:
     st.markdown("## Inteligência Comercial")
 
     # =========================
-    # SCORE DE CONVERSÃO
+    # SCORE DE CONVERSÃO INTELIGENTE
     # =========================
 
     df_score = df_filtrado.copy()
 
-    scores = []
+    df_score["Score Conversão"] = (
+        (
+            df_score["Vantagem PifPaf"].fillna(0) * 25
+        )
+        +
+        (
+            df_score["Score PifPaf"].fillna(0) * 10
+        )
+    )
 
-    for _, row in df_score.iterrows():
+    # bônus por interesse
 
-        pontos = 0
+    df_score.loc[
+        df_score["Interesse em Trocar"]
+        .astype(str)
+        .str.contains("Sim", case=False, na=False),
 
-        if str(row["Interesse em Trocar"]).lower() in ["sim", "talvez"]:
-            pontos += 40
+        "Score Conversão"
+    ] += 30
 
-        if str(row["Potencial"]).lower() == "alto":
-            pontos += 35
+    df_score.loc[
+        df_score["Interesse em Trocar"]
+        .astype(str)
+        .str.contains("Talvez", case=False, na=False),
 
-        elif str(row["Potencial"]).lower() in ["médio", "medio"]:
-            pontos += 20
+        "Score Conversão"
+    ] += 15
 
-        problemas = str(row["Problemas Atuais"])
+    # bônus por potencial
 
-        if "Atrasos" in problemas:
-            pontos += 10
+    df_score.loc[
+        df_score["Potencial"]
+        .astype(str)
+        .str.contains("Alto", case=False, na=False),
 
-        if "Ruptura" in problemas or "Falta de produtos" in problemas:
-            pontos += 10
-
-        if "Falta de atendimento" in problemas:
-            pontos += 10
-
-        scores.append(pontos)
-
-    df_score["Score Conversão"] = scores
+        "Score Conversão"
+    ] += 20
 
     ranking = df_score.sort_values(
         by="Score Conversão",
