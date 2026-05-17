@@ -41,6 +41,56 @@ st.markdown("""
 <style>
 
 /* =========================
+AJUSTE FINAL DE LEGIBILIDADE
+========================= */
+
+/* Texto secundário dos cards */
+[data-testid="metric-container"] p,
+[data-testid="stMarkdownContainer"] p {
+    color: #e5e7eb !important;
+}
+
+/* Links e textos pequenos */
+a, small, span {
+    color: #e5e7eb !important;
+}
+
+/* Abas inativas */
+button[data-baseweb="tab"] {
+    background: #1f2937 !important;
+    color: white !important;
+    border-radius: 12px 12px 0 0 !important;
+}
+
+/* Aba ativa */
+button[data-baseweb="tab"][aria-selected="true"] {
+    background: #b30000 !important;
+    color: white !important;
+}
+
+/* Tabela */
+[data-testid="stDataFrame"] {
+    background: white !important;
+    color: #111827 !important;
+}
+
+/* Mantém texto da tabela escuro */
+[data-testid="stDataFrame"] * {
+    color: #111827 !important;
+}
+
+/* Selects da sidebar */
+div[data-baseweb="select"] span {
+    color: white !important;
+}
+
+/* Correção de títulos */
+.ea-section-title,
+h1, h2, h3 {
+    color: white !important;
+}
+
+/* =========================
 FUNDO GERAL
 ========================= */
 
