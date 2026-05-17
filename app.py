@@ -1285,6 +1285,7 @@ else:
         use_container_width=True,
         hide_index=True
     )
+
     # =========================
     # COMPARATIVO PIFPAF
     # =========================
@@ -1292,120 +1293,34 @@ else:
     st.markdown("---")
 
     st.markdown(
-        '<div class="ea-section-title">Comparativo PifPaf x Concorrentes</div>',
+        '<div class="ea-section-title">Comparativo PifPaf x Fornecedor Atual</div>',
         unsafe_allow_html=True
     )
 
-    df_pifpaf = df_filtrado[
-        df_filtrado["Concorrente"] == "PifPaf"
-    ]
+    score_fornecedor = df_filtrado["Score Fornecedor Atual"].mean()
+    score_pifpaf = df_filtrado["Score PifPaf"].mean()
+    vantagem_media = df_filtrado["Vantagem PifPaf"].mean()
 
-    df_concorrentes = df_filtrado[
-        df_filtrado["Concorrente"] != "PifPaf"
-    ]
+    col1, col2, col3 = st.columns(3)
 
-    if not df_pifpaf.empty and not df_concorrentes.empty:
+    with col1:
+        st.markdown("### Score Fornecedor")
+        st.write(f"Fornecedor Atual: {round(score_fornecedor, 2)}")
 
-        atraso_pifpaf = df_pifpaf["Índice de Atraso"].mean()
-        qualidade_pifpaf = df_pifpaf["Qualidade"].mean()
-        ruptura_pifpaf = df_pifpaf["Itens com Ruptura"].mean()
+    with col2:
+        st.markdown("### Score PifPaf")
+        st.write(f"PifPaf: {round(score_pifpaf, 2)}")
 
-        atraso_concorrente = df_concorrentes["Índice de Atraso"].mean()
-        qualidade_concorrente = df_concorrentes["Qualidade"].mean()
-        ruptura_concorrente = df_concorrentes["Itens com Ruptura"].mean()
+    with col3:
+        st.markdown("### Vantagem PifPaf")
+        st.write(f"Diferença média: {round(vantagem_media, 2)}")
 
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-
-            st.markdown("### Índice de Atraso")
-
-            st.write(
-                f"PifPaf: {round(atraso_pifpaf, 2)}"
-            )
-
-            st.write(
-                f"Concorrentes: {round(atraso_concorrente, 2)}"
-            )
-
-            if atraso_pifpaf < atraso_concorrente:
-
-                st.success(
-                    "A PifPaf apresenta melhor desempenho logístico em atrasos."
-                )
-
-            else:
-
-                st.error(
-                    "A PifPaf apresenta maior índice de atraso que os concorrentes."
-                )
-
-        with col2:
-
-            st.markdown("### Qualidade")
-
-            st.write(
-                f"PifPaf: {round(qualidade_pifpaf, 2)}"
-            )
-
-            st.write(
-                f"Concorrentes: {round(qualidade_concorrente, 2)}"
-            )
-
-            if qualidade_pifpaf > qualidade_concorrente:
-
-                st.success(
-                    "A PifPaf apresenta melhor qualidade operacional."
-                )
-
-            elif qualidade_pifpaf == qualidade_concorrente:
-
-                st.info(
-                    "A PifPaf apresenta qualidade equivalente aos concorrentes."
-                )
-
-            else:
-
-                st.warning(
-                    "Os concorrentes apresentam qualidade superior à PifPaf."
-                )
-
-        with col3:
-
-            st.markdown("### Rupturas")
-
-            st.write(
-                f"PifPaf: {round(ruptura_pifpaf, 2)}"
-            )
-
-            st.write(
-                f"Concorrentes: {round(ruptura_concorrente, 2)}"
-            )
-
-            if ruptura_pifpaf < ruptura_concorrente:
-
-                st.success(
-                    "A PifPaf apresenta melhor estabilidade de abastecimento."
-                )
-
-            elif ruptura_pifpaf == ruptura_concorrente:
-
-                st.info(
-                    "A PifPaf apresenta ruptura equivalente aos concorrentes."
-                )
-
-            else:
-
-                st.error(
-                    "A PifPaf apresenta maior índice de rupturas."
-                )
-
+    if score_pifpaf > score_fornecedor:
+        st.success("A PifPaf apresenta melhor posicionamento médio na base analisada.")
+    elif score_pifpaf < score_fornecedor:
+        st.warning("O fornecedor atual apresenta melhor posicionamento médio que a PifPaf.")
     else:
-
-        st.warning(
-            "Adicione registros da PifPaf e concorrentes para comparação."
-        )
-
+        st.info("A disputa entre PifPaf e fornecedor atual está equilibrada.")
     # =========================
     # OPORTUNIDADES E AÇÕES RECOMENDADAS
     # =========================
