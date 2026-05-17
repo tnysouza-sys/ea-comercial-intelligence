@@ -895,7 +895,7 @@ with aba_operacao:
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-    with col5:
+       with col5:
 
         st.markdown("### Qualidade da Entrega")
 
@@ -919,10 +919,8 @@ with aba_operacao:
             yaxis_title="Qualidade",
             yaxis=dict(range=[0, 5.5]),
             template="plotly_dark",
-
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-
             font=dict(color="white"),
         )
 
@@ -961,10 +959,8 @@ with aba_operacao:
         xaxis_title="Empresa",
         yaxis_title="Itens com Ruptura",
         template="plotly_dark",
-
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-
         font=dict(color="white"),
     )
 
@@ -984,50 +980,48 @@ with aba_operacao:
         unsafe_allow_html=True
     )
 
-comparativo_score = pd.DataFrame({
+    comparativo_score = pd.DataFrame({
+        "Indicador": [
+            "Preço",
+            "Qualidade",
+            "Entrega",
+            "Atendimento",
+            "Variedade",
+            "Negociação"
+        ],
+        "Fornecedor Atual": [
+            df_filtrado["Qualidade"].mean(),
+            df_filtrado["Qualidade"].mean(),
+            df_filtrado["Frequência Entrega"].mean(),
+            df_filtrado["Atendimento Atual"].mean(),
+            0,
+            0
+        ],
+        "PifPaf": [
+            df_filtrado["PifPaf Preço"].mean(),
+            df_filtrado["PifPaf Qualidade"].mean(),
+            df_filtrado["PifPaf Entrega"].mean(),
+            df_filtrado["PifPaf Atendimento"].mean(),
+            df_filtrado["PifPaf Variedade"].mean(),
+            df_filtrado["PifPaf Negociação"].mean()
+        ]
+    })
 
-    "Indicador": [
-        "Preço",
-        "Qualidade",
-        "Entrega",
-        "Atendimento",
-        "Variedade",
-        "Negociação"
-    ],
+    comparativo_melt = comparativo_score.melt(
+        id_vars="Indicador",
+        var_name="Grupo",
+        value_name="Nota"
+    )
 
-    "Fornecedor Atual": [
-        df_filtrado["Qualidade"].mean(),
-        df_filtrado["Qualidade"].mean(),
-        df_filtrado["Frequência Entrega"].mean(),
-        df_filtrado["Atendimento Atual"].mean(),
-        0,
-        0
-    ],
-
-    "PifPaf": [
-        df_filtrado["PifPaf Preço"].mean(),
-        df_filtrado["PifPaf Qualidade"].mean(),
-        df_filtrado["PifPaf Entrega"].mean(),
-        df_filtrado["PifPaf Atendimento"].mean(),
-        df_filtrado["PifPaf Variedade"].mean(),
-        df_filtrado["PifPaf Negociação"].mean()
-    ]
-})
-comparativo_melt = comparativo_score.melt(
-    id_vars="Indicador",
-    var_name="Grupo",
-    value_name="Nota"
-)
-
-        fig_comp = px.bar(
-            comparativo_melt,
-            x="Indicador",
-            y="Nota",
-            color="Grupo",
-            barmode="group",
-            text="Nota",
-            title="Comparativo Estratégico PifPaf x Fornecedor Atual"
-        )
+    fig_comp = px.bar(
+        comparativo_melt,
+        x="Indicador",
+        y="Nota",
+        color="Grupo",
+        barmode="group",
+        text="Nota",
+        title="Comparativo Estratégico PifPaf x Fornecedor Atual"
+    )
 
     fig_comp.update_traces(
         texttemplate="%{text:.2f}",
@@ -1037,8 +1031,8 @@ comparativo_melt = comparativo_score.melt(
     fig_comp.update_layout(
         height=460,
         yaxis=dict(range=[0, 5]),
-        xaxis_title="Grupo",
-        yaxis_title="Score Médio",
+        xaxis_title="Indicador",
+        yaxis_title="Nota Média",
         template="plotly_dark",
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
