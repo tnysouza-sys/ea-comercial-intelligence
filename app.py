@@ -976,39 +976,31 @@ with aba_operacao:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown("---")
+        st.markdown("---")
 
     st.markdown(
-        '<div class="ea-section-title">Comparativo PifPaf x Concorrentes</div>',
+        '<div class="ea-section-title">Comparativo PifPaf x Fornecedor Atual</div>',
         unsafe_allow_html=True
     )
 
-    df_comparativo = df_filtrado.copy()
-
-    df_comparativo["Grupo"] = df_comparativo["Concorrente"].apply(
-        lambda x: "PifPaf" if x == "PifPaf" else "Concorrentes"
-    )
-
-    comparativo = df_comparativo.groupby("Grupo").agg({
-        "Índice de Atraso": "mean",
-        "Qualidade": "mean",
-        "Itens com Ruptura": "mean"
-    }).reset_index()
-
-    comparativo_melt = comparativo.melt(
-        id_vars="Grupo",
-        var_name="Indicador",
-        value_name="Resultado"
-    )
+    comparativo_score = pd.DataFrame({
+        "Grupo": [
+            "Fornecedor Atual",
+            "PifPaf"
+        ],
+        "Score Médio": [
+            df_filtrado["Score Fornecedor Atual"].mean(),
+            df_filtrado["Score PifPaf"].mean()
+        ]
+    })
 
     fig_comp = px.bar(
-        comparativo_melt,
-        x="Indicador",
-        y="Resultado",
+        comparativo_score,
+        x="Grupo",
+        y="Score Médio",
         color="Grupo",
-        barmode="group",
-        text="Resultado",
-        title="PifPaf x Média dos Concorrentes"
+        text="Score Médio",
+        title="Score Médio: PifPaf x Fornecedor Atual"
     )
 
     fig_comp.update_traces(
@@ -1018,13 +1010,12 @@ with aba_operacao:
 
     fig_comp.update_layout(
         height=460,
-        xaxis_title="Indicador",
-        yaxis_title="Resultado Médio",
+        yaxis=dict(range=[0, 5]),
+        xaxis_title="Grupo",
+        yaxis_title="Score Médio",
         template="plotly_dark",
-
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-
         font=dict(color="white"),
     )
 
@@ -1036,6 +1027,29 @@ with aba_operacao:
     )
 
     st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown("### Diagnóstico por Cliente")
+
+    tabela_comparativa = df_filtrado[
+        [
+            "Cliente",
+            "Concorrente",
+            "Cidade",
+            "Score Fornecedor Atual",
+            "Score PifPaf",
+            "Vantagem PifPaf",
+            "Diagnóstico Comparativo"
+        ]
+    ].sort_values(
+        by="Vantagem PifPaf",
+        ascending=False
+    )
+
+    st.dataframe(
+        tabela_comparativa,
+        use_container_width=True,
+        hide_index=True
+    )
 
 # =========================
 # ABA — MAPA
