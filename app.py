@@ -1022,11 +1022,11 @@ comparativo_melt = comparativo_score.melt(
 
     fig_comp = px.bar(
         comparativo_melt,
-    	x="Indicador",
-    	y="Nota",
-    	color="Grupo",
+        x="Indicador",
+        y="Nota",
+        color="Grupo",
         barmode="group",
-    	text="Nota",
+        text="Nota",
         title="Comparativo Estratégico PifPaf x Fornecedor Atual"
     )
 
