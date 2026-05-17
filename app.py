@@ -36,6 +36,140 @@ st.set_page_config(
     page_icon="📊",
     layout="wide"
 )
+
+st.markdown("""
+<style>
+
+/* =========================
+FUNDO GERAL
+========================= */
+
+.stApp {
+    background: linear-gradient(
+        135deg,
+        #111827,
+        #1f2937
+    );
+    color: white;
+}
+
+/* =========================
+TEXTOS
+========================= */
+
+html,
+body,
+[class*="css"]  {
+    color: white !important;
+}
+
+/* =========================
+TÍTULOS
+========================= */
+
+h1, h2, h3, h4, h5, h6 {
+    color: white !important;
+}
+
+/* =========================
+SIDEBAR
+========================= */
+
+section[data-testid="stSidebar"] {
+    background-color: #111827;
+}
+
+section[data-testid="stSidebar"] * {
+    color: white !important;
+}
+
+/* =========================
+CARDS
+========================= */
+
+.ea-card {
+    background: rgba(255,255,255,0.04);
+    border-radius: 14px;
+    padding: 15px;
+    border: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 15px;
+}
+
+/* =========================
+SECTION TITLE
+========================= */
+
+.ea-section-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 20px;
+}
+
+/* =========================
+DATAFRAME
+========================= */
+
+[data-testid="stDataFrame"] {
+    background-color: rgba(255,255,255,0.03);
+    border-radius: 12px;
+}
+
+/* =========================
+TABS
+========================= */
+
+button[data-baseweb="tab"] {
+    color: white !important;
+}
+
+/* =========================
+MÉTRICAS
+========================= */
+
+[data-testid="metric-container"] {
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+    padding: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* =========================
+LABELS
+========================= */
+
+label {
+    color: white !important;
+}
+
+/* =========================
+SELECTBOX
+========================= */
+
+div[data-baseweb="select"] * {
+    color: white !important;
+    background-color: #1f2937 !important;
+}
+
+/* =========================
+INPUTS
+========================= */
+
+input {
+    color: white !important;
+    background-color: #1f2937 !important;
+}
+
+/* =========================
+PLOTLY
+========================= */
+
+.js-plotly-plot .plotly .main-svg {
+    background: transparent !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
 # =========================
 # VISUAL EA COMERCIAL INTELLIGENCE
 # =========================
