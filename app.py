@@ -6,7 +6,15 @@ import matplotlib.pyplot as plt
 import folium
 import plotly.express as px
 
+from io import BytesIO
+
 from streamlit_folium import st_folium
+
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.enum.text import PP_ALIGN
+from pptx.dml.color import RGBColor
+
 from reportlab.platypus import (
     SimpleDocTemplate,
     Paragraph,
