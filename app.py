@@ -573,6 +573,63 @@ df["Itens com Ruptura"] = df["Problemas Atuais"].apply(
 )
 
 # =========================
+# COMPARAÇÃO LINHA A LINHA
+# =========================
+
+def nota_texto(valor):
+    valor = str(valor).strip().lower()
+
+    if valor in ["ruim", "péssimo", "pessimo"]:
+        return 1
+    elif valor == "regular":
+        return 3
+    elif valor == "bom":
+        return 4
+    elif valor in ["excelente", "ótimo", "otimo"]:
+        return 5
+    else:
+        return pd.to_numeric(valor, errors="coerce")
+
+colunas_avaliacao = [
+    "Qualidade",
+    "Frequência Entrega",
+    "Atendimento Atual",
+    "PifPaf Preço",
+    "PifPaf Qualidade",
+    "PifPaf Entrega",
+    "PifPaf Atendimento",
+    "PifPaf Variedade",
+    "PifPaf Negociação"
+]
+
+for coluna in colunas_avaliacao:
+    if coluna in df.columns:
+        df[coluna] = df[coluna].apply(nota_texto).fillna(0)
+
+df["Score Fornecedor Atual"] = (
+    df["Qualidade"] +
+    df["Frequência Entrega"] +
+    df["Atendimento Atual"]
+) / 3
+
+df["Score PifPaf"] = (
+    df["PifPaf Preço"] +
+    df["PifPaf Qualidade"] +
+    df["PifPaf Entrega"] +
+    df["PifPaf Atendimento"] +
+    df["PifPaf Variedade"] +
+    df["PifPaf Negociação"]
+) / 6
+
+df["Vantagem PifPaf"] = df["Score PifPaf"] - df["Score Fornecedor Atual"]
+
+df["Diagnóstico Comparativo"] = df["Vantagem PifPaf"].apply(
+    lambda x: "PifPaf melhor posicionada" if x > 0.5
+    else "Fornecedor atual melhor posicionado" if x < -0.5
+    else "Disputa equilibrada"
+)
+
+# =========================
 # PADRONIZAR PIFPAF
 # =========================
 
