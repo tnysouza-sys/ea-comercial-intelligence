@@ -997,26 +997,26 @@ with aba_mapa:
         df_map["Longitude"] = None
 
     df_map["Latitude"] = (
-    df_map["Latitude"]
-    .astype(str)
-    .str.replace(",", ".", regex=False)
-)
+        df_map["Latitude"]
+        .astype(str)
+        .str.replace(",", ".", regex=False)
+    )
 
-df_map["Longitude"] = (
-    df_map["Longitude"]
-    .astype(str)
-    .str.replace(",", ".", regex=False)
-)
+    df_map["Longitude"] = (
+        df_map["Longitude"]
+        .astype(str)
+        .str.replace(",", ".", regex=False)
+    )
 
-df_map["Latitude"] = pd.to_numeric(
-    df_map["Latitude"],
-    errors="coerce"
-)
+    df_map["Latitude"] = pd.to_numeric(
+        df_map["Latitude"],
+        errors="coerce"
+    )
 
-df_map["Longitude"] = pd.to_numeric(
-    df_map["Longitude"],
-    errors="coerce"
-)
+    df_map["Longitude"] = pd.to_numeric(
+        df_map["Longitude"],
+        errors="coerce"
+    )
 
     df_map = df_map.dropna(
         subset=["Latitude", "Longitude"]
@@ -1025,7 +1025,7 @@ df_map["Longitude"] = pd.to_numeric(
     if df_map.empty:
 
         st.warning(
-            "Nenhuma coordenada encontrada. Rode o script de Latitude/Longitude no Colab antes de usar o mapa."
+            "Nenhuma coordenada encontrada."
         )
 
     else:
