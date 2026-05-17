@@ -885,14 +885,15 @@ with aba_operacao:
 
             font=dict(color="white"),
         )
-    st.markdown('<div class="ea-card">', unsafe_allow_html=True)
+
+        st.markdown('<div class="ea-card">', unsafe_allow_html=True)
 
         st.plotly_chart(
             fig_atraso,
             use_container_width=True
         )
 
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with col5:
 
@@ -925,21 +926,21 @@ with aba_operacao:
             font=dict(color="white"),
         )
 
-    st.markdown('<div class="ea-card">', unsafe_allow_html=True)
+        st.markdown('<div class="ea-card">', unsafe_allow_html=True)
 
         st.plotly_chart(
             fig_qualidade,
             use_container_width=True
         )
 
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("---")
 
     st.markdown(
         '<div class="ea-section-title">Rupturas por Empresa</div>',
         unsafe_allow_html=True
-        )
+    )
 
     fig_ruptura = px.bar(
         df_filtrado,
