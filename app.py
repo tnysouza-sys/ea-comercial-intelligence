@@ -1553,129 +1553,112 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-df_pifpaf = df_filtrado[
-    df_filtrado["Concorrente"] == "PifPaf"
-]
-
-df_concorrentes = df_filtrado[
-    df_filtrado["Concorrente"] != "PifPaf"
-]
-
 analises = []
 
-if not df_pifpaf.empty and not df_concorrentes.empty:
+score_fornecedor = df_filtrado["Score Fornecedor Atual"].mean()
+score_pifpaf = df_filtrado["Score PifPaf"].mean()
+vantagem_media = df_filtrado["Vantagem PifPaf"].mean()
+volume_total = df_filtrado["Volume Mensal"].sum()
 
-    atraso_pifpaf = df_pifpaf["Índice de Atraso"].mean()
-    atraso_concorrente = df_concorrentes["Índice de Atraso"].mean()
+clientes_prioritarios = len(
+    df_filtrado[df_filtrado["Potencial"] == "Alto"]
+)
 
-    qualidade_pifpaf = df_pifpaf["Qualidade"].mean()
-    qualidade_concorrente = df_concorrentes["Qualidade"].mean()
+interesse_troca = len(
+    df_filtrado[
+        df_filtrado["Interesse em Trocar"]
+        .astype(str)
+        .str.contains("Sim|Talvez", case=False, na=False)
+    ]
+)
 
-    ruptura_pifpaf = df_pifpaf["Itens com Ruptura"].mean()
-    ruptura_concorrente = df_concorrentes["Itens com Ruptura"].mean()
+pifpaf_melhor = len(
+    df_filtrado[
+        df_filtrado["Diagnóstico Comparativo"] == "PifPaf melhor posicionada"
+    ]
+)
 
-    volume_total = df_filtrado["Volume Mensal"].sum()
+fornecedor_melhor = len(
+    df_filtrado[
+        df_filtrado["Diagnóstico Comparativo"] == "Fornecedor atual melhor posicionado"
+    ]
+)
 
-    clientes_prioritarios = len(
-        df_filtrado[df_filtrado["Potencial"] == "Alto"]
-    )
+equilibrado = len(
+    df_filtrado[
+        df_filtrado["Diagnóstico Comparativo"] == "Disputa equilibrada"
+    ]
+)
 
-    interesse_troca = len(
-        df_filtrado[df_filtrado["Interesse em Trocar"] == "Sim"]
-    )
-
-    if atraso_pifpaf > atraso_concorrente:
-
-        analises.append(
-            "A PifPaf apresenta atraso médio acima dos concorrentes. "
-            "Isso indica necessidade de revisar rotas, frequência de entrega "
-            "e capacidade operacional."
-        )
-
-    elif atraso_pifpaf == atraso_concorrente:
-
-        analises.append(
-            "A PifPaf apresenta atraso equivalente aos concorrentes. "
-            "O desempenho logístico está no mesmo nível do mercado analisado."
-        )
-
-    else:
-
-        analises.append(
-            "A PifPaf apresenta melhor desempenho em atraso frente aos concorrentes."
-        )
-
-    if qualidade_pifpaf < qualidade_concorrente:
-
-        analises.append(
-            "Os concorrentes apresentam melhor percepção de qualidade. "
-            "Isso indica oportunidade de reforçar atendimento, conservação "
-            "e experiência de entrega da PifPaf."
-        )
-
-    elif qualidade_pifpaf == qualidade_concorrente:
-
-        analises.append(
-            "A PifPaf apresenta qualidade equivalente aos concorrentes."
-        )
-
-    else:
-
-        analises.append(
-            "A PifPaf demonstra qualidade operacional superior ao mercado analisado."
-        )
-
-    if ruptura_pifpaf > ruptura_concorrente:
-
-        analises.append(
-            "A ruptura da PifPaf está acima da média dos concorrentes. "
-            "Esse ponto representa risco de perda comercial e exige reforço no abastecimento."
-        )
-
-    elif ruptura_pifpaf == ruptura_concorrente:
-
-        analises.append(
-            "A PifPaf apresenta nível de ruptura equivalente aos concorrentes."
-        )
-
-    else:
-
-        analises.append(
-            "A PifPaf apresenta melhor estabilidade de abastecimento frente aos concorrentes."
-        )
-
-    if clientes_prioritarios > 0:
-
-        analises.append(
-            f"Existem {clientes_prioritarios} clientes de alto potencial que devem receber atenção comercial prioritária."
-        )
-
-    if interesse_troca > 0:
-
-        analises.append(
-            f"Foram identificados {interesse_troca} clientes com abertura para mudança ou ampliação de fornecimento."
-        )
-
-    if volume_total >= 10000:
-
-        analises.append(
-            "O volume mensal analisado demonstra potencial relevante para crescimento regional."
-        )
+if score_pifpaf > score_fornecedor:
 
     analises.append(
-        "O cenário geral indica oportunidades de melhoria operacional, fortalecimento logístico "
-        "e expansão comercial da PifPaf na região analisada."
+        f"A PifPaf apresenta score médio superior ao fornecedor atual "
+        f"({round(score_pifpaf, 2)} contra {round(score_fornecedor, 2)}). "
+        "Isso indica vantagem competitiva percebida na base analisada."
     )
 
-    for texto in analises:
+elif score_pifpaf < score_fornecedor:
 
-        st.info(texto)
+    analises.append(
+        f"O fornecedor atual apresenta score médio superior à PifPaf "
+        f"({round(score_fornecedor, 2)} contra {round(score_pifpaf, 2)}). "
+        "Isso indica necessidade de reforçar proposta comercial, negociação ou percepção de valor."
+    )
 
 else:
 
-    st.warning(
-        "Adicione registros da PifPaf e concorrentes para gerar análises comparativas."
+    analises.append(
+        "A PifPaf e o fornecedor atual apresentam score médio equivalente. "
+        "O cenário indica disputa equilibrada."
     )
+
+analises.append(
+    f"Na análise cliente por cliente, a PifPaf está melhor posicionada em "
+    f"{pifpaf_melhor} cliente(s), o fornecedor atual lidera em "
+    f"{fornecedor_melhor} cliente(s), e há disputa equilibrada em "
+    f"{equilibrado} cliente(s)."
+)
+
+if clientes_prioritarios > 0:
+
+    analises.append(
+        f"Existem {clientes_prioritarios} cliente(s) de alto potencial que devem receber atenção comercial prioritária."
+    )
+
+if interesse_troca > 0:
+
+    analises.append(
+        f"Foram identificados {interesse_troca} cliente(s) com abertura para troca ou ampliação de fornecimento."
+    )
+
+if vantagem_media > 0.5:
+
+    analises.append(
+        "A vantagem média da PifPaf é relevante. A recomendação é acelerar visitas comerciais, apresentar proposta estruturada e explorar os pontos fortes percebidos."
+    )
+
+elif vantagem_media < -0.5:
+
+    analises.append(
+        "A desvantagem média da PifPaf indica necessidade de ação corretiva em preço, entrega, atendimento ou negociação antes de buscar conversão direta."
+    )
+
+else:
+
+    analises.append(
+        "A vantagem média está próxima do equilíbrio. A recomendação é trabalhar relacionamento, negociação consultiva e acompanhamento contínuo."
+    )
+
+if volume_total >= 10000:
+
+    analises.append(
+        "O volume mensal analisado demonstra potencial relevante para crescimento regional."
+    )
+
+for texto in analises:
+
+    st.info(texto)
 
 # =========================
 # ABA — INTELIGÊNCIA COMERCIAL
