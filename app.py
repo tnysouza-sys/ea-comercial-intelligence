@@ -1020,16 +1020,15 @@ comparativo_melt = comparativo_score.melt(
     value_name="Nota"
 )
 
-    fig_comp = px.bar(
-        comparativo_melt,
-        x="Indicador",
-        y="Nota",
-        color="Grupo",
-        barmode="group",
-        text="Nota",
-        title="Comparativo Estratégico PifPaf x Fornecedor Atual"
-    )
-
+        fig_comp = px.bar(
+            comparativo_melt,
+            x="Indicador",
+            y="Nota",
+            color="Grupo",
+            barmode="group",
+            text="Nota",
+            title="Comparativo Estratégico PifPaf x Fornecedor Atual"
+        )
     fig_comp.update_traces(
         texttemplate="%{text:.2f}",
         textposition="outside"
