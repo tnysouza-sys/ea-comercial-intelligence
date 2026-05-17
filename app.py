@@ -1063,34 +1063,100 @@ with aba_mapa:
 with aba_clientes:
 
     st.markdown(
-        '<div class="ea-section-title">Gargalos Detectados</div>',
+        '<div class="ea-section-title">Gargalos Estratégicos por Cliente</div>',
         unsafe_allow_html=True
     )
 
-    criticos = df_filtrado[
-        (df_filtrado["Índice de Atraso"] >= 4) |
-        (df_filtrado["Itens com Ruptura"] >= 5)
+    gargalos = df_filtrado[
+        (
+            df_filtrado["Diagnóstico Comparativo"]
+            == "Fornecedor atual melhor posicionado"
+        )
     ]
 
-    if len(criticos) > 0:
+    equilibrados = df_filtrado[
+        (
+            df_filtrado["Diagnóstico Comparativo"]
+            == "Disputa equilibrada"
+        )
+    ]
 
-        for _, row in criticos.iterrows():
+    oportunidades = df_filtrado[
+        (
+            df_filtrado["Diagnóstico Comparativo"]
+            == "PifPaf melhor posicionada"
+        )
+    ]
 
-            st.error(f"""
-📍 {row['Cidade']} - {row['Estado']}
+    if gargalos.empty and equilibrados.empty:
 
-Empresa: {row['Concorrente']}
-
-Atraso: {row['Índice de Atraso']}
-
-Rupturas: {row['Itens com Ruptura']}
-""")
+        st.success(
+            "A PifPaf apresenta posicionamento competitivo positivo na base analisada."
+        )
 
     else:
 
-        st.success(
-            "Nenhum gargalo crítico identificado."
-        )
+        if not gargalos.empty:
+
+            st.error(
+                f"{len(gargalos)} cliente(s) apresentam vantagem para o fornecedor atual."
+            )
+
+            for _, row in gargalos.iterrows():
+
+                st.error(f"""
+📍 {row['Cidade']}
+
+Cliente: {row['Cliente']}
+
+Fornecedor Atual: {row['Concorrente']}
+
+Score Fornecedor: {round(row['Score Fornecedor Atual'], 2)}
+
+Score PifPaf: {round(row['Score PifPaf'], 2)}
+
+Vantagem PifPaf: {round(row['Vantagem PifPaf'], 2)}
+""")
+
+        if not equilibrados.empty:
+
+            st.warning(
+                f"{len(equilibrados)} cliente(s) estão em disputa equilibrada."
+            )
+
+            for _, row in equilibrados.iterrows():
+
+                st.warning(f"""
+📍 {row['Cidade']}
+
+Cliente: {row['Cliente']}
+
+Fornecedor Atual: {row['Concorrente']}
+
+Disputa equilibrada entre fornecedor atual e PifPaf.
+""")
+
+        if not oportunidades.empty:
+
+            st.success(
+                f"{len(oportunidades)} cliente(s) apresentam alta oportunidade para avanço comercial da PifPaf."
+            )
+
+            for _, row in oportunidades.iterrows():
+
+                st.success(f"""
+📍 {row['Cidade']}
+
+Cliente: {row['Cliente']}
+
+Fornecedor Atual: {row['Concorrente']}
+
+Score Fornecedor: {round(row['Score Fornecedor Atual'], 2)}
+
+Score PifPaf: {round(row['Score PifPaf'], 2)}
+
+Vantagem PifPaf: {round(row['Vantagem PifPaf'], 2)}
+""")
 # =========================
 # RANKING DE QUALIDADE
 # =========================
