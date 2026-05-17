@@ -577,18 +577,32 @@ df["Itens com Ruptura"] = df["Problemas Atuais"].apply(
 # =========================
 
 def nota_texto(valor):
+
+    if pd.isna(valor):
+        return 0
+
     valor = str(valor).strip().lower()
 
-    if valor in ["ruim", "péssimo", "pessimo"]:
-        return 1
-    elif valor == "regular":
-        return 3
-    elif valor == "bom":
-        return 4
-    elif valor in ["excelente", "ótimo", "otimo"]:
-        return 5
-    else:
-        return pd.to_numeric(valor, errors="coerce")
+    mapa = {
+        "péssimo": 1,
+        "pessimo": 1,
+        "ruim": 2,
+        "regular": 3,
+        "bom": 4,
+        "excelente": 5,
+        "ótimo": 5,
+        "otimo": 5
+    }
+
+    if valor in mapa:
+        return mapa[valor]
+
+    try:
+        return float(valor)
+
+    except:
+        return 0
+
 
 colunas_avaliacao = [
     "Qualidade",
@@ -603,14 +617,24 @@ colunas_avaliacao = [
 ]
 
 for coluna in colunas_avaliacao:
-    if coluna in df.columns:
-        df[coluna] = df[coluna].apply(nota_texto).fillna(0)
+
+    if coluna not in df.columns:
+        df[coluna] = 0
+
+    df[coluna] = df[coluna].apply(nota_texto)
+
+    df[coluna] = pd.to_numeric(
+        df[coluna],
+        errors="coerce"
+    ).fillna(0)
+
 
 df["Score Fornecedor Atual"] = (
     df["Qualidade"] +
     df["Frequência Entrega"] +
     df["Atendimento Atual"]
 ) / 3
+
 
 df["Score PifPaf"] = (
     df["PifPaf Preço"] +
@@ -621,7 +645,12 @@ df["Score PifPaf"] = (
     df["PifPaf Negociação"]
 ) / 6
 
-df["Vantagem PifPaf"] = df["Score PifPaf"] - df["Score Fornecedor Atual"]
+
+df["Vantagem PifPaf"] = (
+    df["Score PifPaf"] -
+    df["Score Fornecedor Atual"]
+)
+
 
 df["Diagnóstico Comparativo"] = df["Vantagem PifPaf"].apply(
     lambda x: "PifPaf melhor posicionada" if x > 0.5
