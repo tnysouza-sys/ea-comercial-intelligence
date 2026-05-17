@@ -870,6 +870,7 @@ Clientes prioritários
     )
 
     st.markdown('</div>', unsafe_allow_html=True)
+
 # =========================
 # ABA 2 — OPERAÇÃO
 # =========================
@@ -877,193 +878,57 @@ Clientes prioritários
 with aba_operacao:
 
     st.markdown(
-        '<div class="ea-section-title">Análise Visual dos Indicadores</div>',
+        '<div class="ea-section-title">Operação Comparativa</div>',
         unsafe_allow_html=True
     )
 
-    col4, col5 = st.columns(2)
-
-    with col4:
-        st.markdown("### Índice de Atraso por Empresa")
-
-        fig_atraso = px.bar(
-            df_filtrado,
-            x="Concorrente",
-            y="Índice de Atraso",
-            color="Concorrente",
-            text="Índice de Atraso",
-            title="Comparativo de Atraso"
-        )
-
-        fig_atraso.update_traces(textposition="outside")
-
-        fig_atraso.update_layout(
-            height=420,
-            showlegend=False,
-            xaxis_title="Empresa",
-            yaxis_title="Índice de Atraso",
-            yaxis=dict(range=[0, 5.5]),
-            template="plotly_dark",
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="white"),
-        )
-
-        st.markdown('<div class="ea-card">', unsafe_allow_html=True)
-        st.plotly_chart(fig_atraso, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    with col5:
-        st.markdown("### Qualidade da Entrega")
-
-        fig_qualidade = px.bar(
-            df_filtrado,
-            x="Concorrente",
-            y="Qualidade",
-            color="Concorrente",
-            text="Qualidade",
-            title="Comparativo de Qualidade"
-        )
-
-        fig_qualidade.update_traces(textposition="outside")
-
-        fig_qualidade.update_layout(
-            height=420,
-            showlegend=False,
-            xaxis_title="Empresa",
-            yaxis_title="Qualidade",
-            yaxis=dict(range=[0, 5.5]),
-            template="plotly_dark",
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="white"),
-        )
-
-        st.markdown('<div class="ea-card">', unsafe_allow_html=True)
-        st.plotly_chart(fig_qualidade, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown("---")
-
-    st.markdown(
-        '<div class="ea-section-title">Rupturas por Empresa</div>',
-        unsafe_allow_html=True
-    )
-
-    fig_ruptura = px.bar(
-        df_filtrado,
-        x="Concorrente",
-        y="Itens com Ruptura",
-        color="Concorrente",
-        text="Itens com Ruptura",
-        title="Comparativo de Rupturas"
-    )
-
-    fig_ruptura.update_traces(textposition="outside")
-
-    fig_ruptura.update_layout(
-        height=420,
-        showlegend=False,
-        xaxis_title="Empresa",
-        yaxis_title="Itens com Ruptura",
-        template="plotly_dark",
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="white"),
-    )
-
-    st.markdown('<div class="ea-card">', unsafe_allow_html=True)
-    st.plotly_chart(fig_ruptura, use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown("---")
-
-    st.markdown(
-        '<div class="ea-section-title">Comparativo PifPaf x Fornecedor Atual</div>',
-        unsafe_allow_html=True
-    )
+    st.markdown("### PifPaf x Fornecedor Atual")
 
     comparativo_score = pd.DataFrame({
-        "Indicador": [
-            "Preço",
-            "Qualidade",
-            "Entrega",
-            "Atendimento",
-            "Variedade",
-            "Negociação"
-        ],
-        "Fornecedor Atual": [
-            0,
-            df_filtrado["Qualidade"].mean(),
-            df_filtrado["Frequência Entrega"].mean(),
-            df_filtrado["Atendimento Atual"].mean(),
-            0,
-            0
-        ],
-        "PifPaf": [
-            df_filtrado["PifPaf Preço"].mean(),
-            df_filtrado["PifPaf Qualidade"].mean(),
-            df_filtrado["PifPaf Entrega"].mean(),
-            df_filtrado["PifPaf Atendimento"].mean(),
-            df_filtrado["PifPaf Variedade"].mean(),
-            df_filtrado["PifPaf Negociação"].mean()
+        "Grupo": ["Fornecedor Atual", "PifPaf"],
+        "Score Médio": [
+            df_filtrado["Score Fornecedor Atual"].mean(),
+            df_filtrado["Score PifPaf"].mean()
         ]
     })
 
-    comparativo_melt = comparativo_score.melt(
-        id_vars="Indicador",
-        var_name="Grupo",
-        value_name="Nota"
-    )
-
-    fig_comp = px.bar(
-        comparativo_melt,
-        x="Indicador",
-        y="Nota",
+    fig_score = px.bar(
+        comparativo_score,
+        x="Grupo",
+        y="Score Médio",
         color="Grupo",
-        barmode="group",
-        text="Nota",
-        title="Comparativo Estratégico PifPaf x Fornecedor Atual"
+        text="Score Médio",
+        title="Score Médio Comparativo"
     )
 
-    fig_comp.update_traces(
+    fig_score.update_traces(
         texttemplate="%{text:.2f}",
         textposition="outside"
     )
 
-    fig_comp.update_layout(
-        height=460,
+    fig_score.update_layout(
+        height=420,
         yaxis=dict(range=[0, 5]),
-        xaxis_title="Indicador",
-        yaxis_title="Nota Média",
         template="plotly_dark",
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="white"),
+        showlegend=False
     )
 
-    st.markdown('<div class="ea-card">', unsafe_allow_html=True)
-    st.plotly_chart(fig_comp, use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.plotly_chart(fig_score, use_container_width=True)
 
+    st.markdown("---")
     st.markdown("### Diagnóstico por Cliente")
 
-    colunas_diagnostico = [
-        "Cliente",
-        "Concorrente",
-        "Cidade",
-        "Score Fornecedor Atual",
-        "Score PifPaf",
-        "Vantagem PifPaf",
-        "Diagnóstico Comparativo"
-    ]
-
-    colunas_diagnostico_existentes = [
-        coluna for coluna in colunas_diagnostico
-        if coluna in df_filtrado.columns
-    ]
-
-    tabela_comparativa = df_filtrado[colunas_diagnostico_existentes].sort_values(
+    tabela_comparativa = df_filtrado[
+        [
+            "Cliente",
+            "Concorrente",
+            "Cidade",
+            "Score Fornecedor Atual",
+            "Score PifPaf",
+            "Vantagem PifPaf",
+            "Diagnóstico Comparativo"
+        ]
+    ].sort_values(
         by="Vantagem PifPaf",
         ascending=False
     )
@@ -1073,6 +938,23 @@ with aba_operacao:
         use_container_width=True,
         hide_index=True
     )
+
+    st.markdown("---")
+    st.markdown("### Maiores Oportunidades para PifPaf")
+
+    oportunidades = tabela_comparativa[
+        tabela_comparativa["Diagnóstico Comparativo"] == "PifPaf melhor posicionada"
+    ]
+
+    if oportunidades.empty:
+        st.warning("Nenhuma oportunidade clara identificada no momento.")
+    else:
+        st.success("Clientes onde a PifPaf está melhor posicionada:")
+        st.dataframe(
+            oportunidades,
+            use_container_width=True,
+            hide_index=True
+        )
 
 # =========================
 # ABA — MAPA
@@ -2047,42 +1929,26 @@ with aba_inteligencia:
 
     st.plotly_chart(fig_funil, use_container_width=True)
 
-        # =========================
+    # =========================
     # MATRIZ DE OPORTUNIDADE
     # =========================
 
     st.markdown("---")
     st.subheader("Matriz de Oportunidade Comercial")
 
-    ranking["Volume Mensal"] = pd.to_numeric(
-        ranking["Volume Mensal"],
-        errors="coerce"
-    ).fillna(0)
-
-    ranking["Score Conversão"] = pd.to_numeric(
-        ranking["Score Conversão"],
-        errors="coerce"
-    ).fillna(0)
-
-    ranking["Score Conversão Ajustado"] = (
-        ranking["Score Conversão"]
-        .clip(lower=1)
-    )
-
-    fig_bubble = px.scatter(
-        ranking,
-        x="Volume Mensal",
-        y="Score Conversão",
-        size="Score Conversão Ajustado",
-        color="Concorrente",
-        hover_name="Cliente",
-        template="plotly_dark",
-        title="Volume mensal x Score de conversão"
-    )
-
-    st.plotly_chart(
-        fig_bubble,
-        use_container_width=True
+    st.dataframe(
+        ranking[
+            [
+                "Cliente",
+                "Cidade",
+                "Concorrente",
+                "Volume Mensal",
+                "Score Conversão",
+                "Diagnóstico Comparativo"
+            ]
+        ],
+        use_container_width=True,
+        hide_index=True
     )
 
     # =========================
