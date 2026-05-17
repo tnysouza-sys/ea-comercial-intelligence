@@ -857,7 +857,7 @@ with aba_operacao:
 
     with col4:
 
-        st.markdown("### Índice de Atraso por Empresa")
+    st.markdown("### Índice de Atraso por Empresa")
 
         fig_atraso = px.bar(
             df_filtrado,
@@ -892,11 +892,11 @@ with aba_operacao:
             use_container_width=True
         )
 
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     with col5:
 
-        st.markdown("### Qualidade da Entrega")
+    st.markdown("### Qualidade da Entrega")
 
         fig_qualidade = px.bar(
             df_filtrado,
@@ -925,14 +925,14 @@ with aba_operacao:
             font=dict(color="white"),
         )
 
-        st.markdown('<div class="ea-card">', unsafe_allow_html=True)
+    st.markdown('<div class="ea-card">', unsafe_allow_html=True)
 
         st.plotly_chart(
             fig_qualidade,
             use_container_width=True
         )
 
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("---")
 
@@ -976,7 +976,7 @@ with aba_operacao:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-        st.markdown("---")
+    st.markdown("---")
 
     st.markdown(
         '<div class="ea-section-title">Comparativo PifPaf x Fornecedor Atual</div>',
