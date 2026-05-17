@@ -737,26 +737,22 @@ aba_geral, aba_operacao, aba_clientes, aba_inteligencia, aba_relatorio, aba_mapa
 
 with aba_geral:
 
-        # =========================
-    # KPIs PREMIUM
-    # =========================
-
     st.markdown("## Indicadores Estratégicos")
 
     total_clientes = len(df_filtrado)
 
-    atraso_medio = round(
-        df_filtrado["Índice de Atraso"].mean(),
+    score_fornecedor = round(
+        df_filtrado["Score Fornecedor Atual"].mean(),
         1
     )
 
-    ruptura_media = round(
-        df_filtrado["Itens com Ruptura"].mean(),
+    score_pifpaf = round(
+        df_filtrado["Score PifPaf"].mean(),
         1
     )
 
-    qualidade_media = round(
-        df_filtrado["Qualidade"].mean(),
+    vantagem_media = round(
+        df_filtrado["Vantagem PifPaf"].mean(),
         1
     )
 
@@ -777,23 +773,23 @@ Base total cadastrada
 
     with col2:
         st.warning(f"""
-### Atraso Médio
-# {atraso_medio}
-Performance logística
+### Score Fornecedor
+# {score_fornecedor}
+Fornecedor atual
 """)
 
     with col3:
-        st.error(f"""
-### Ruptura Média
-# {ruptura_media}
-Falhas operacionais
+        st.success(f"""
+### Score PifPaf
+# {score_pifpaf}
+Percepção da marca
 """)
 
     with col4:
-        st.success(f"""
-### Qualidade
-# {qualidade_media}
-Nível operacional
+        st.info(f"""
+### Vantagem PifPaf
+# {vantagem_media}
+Diferença média
 """)
 
     with col5:
@@ -820,13 +816,16 @@ Clientes prioritários
         "Segmento",
         "Concorrente",
         "Cidade",
-        "Índice de Atraso",
-        "Itens com Ruptura",
-        "Qualidade",
         "Volume Mensal",
-        "Potencial","Oportunidade PifPaf",
+        "Potencial",
+        "Oportunidade PifPaf",
         "Dificuldade PifPaf",
-        "Problema Operacional",
+
+        "Score Fornecedor Atual",
+        "Score PifPaf",
+        "Vantagem PifPaf",
+        "Diagnóstico Comparativo",
+
         "Status Comercial"
     ]
 
