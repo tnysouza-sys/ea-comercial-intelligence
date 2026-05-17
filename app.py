@@ -2090,42 +2090,38 @@ with aba_relatorio:
 
     if st.button("Gerar Relatório PDF"):
 
-        media_atraso = df_filtrado["Índice de Atraso"].mean()
-        media_qualidade = df_filtrado["Qualidade"].mean()
-        total_ruptura = df_filtrado["Itens com Ruptura"].sum()
-        volume_total = (
-            df_filtrado["Volume Mensal"].sum()
-            if "Volume Mensal" in df_filtrado.columns
-            else 0
+        total_clientes = len(df_filtrado)
+        volume_total = df_filtrado["Volume Mensal"].sum()
+        score_fornecedor = df_filtrado["Score Fornecedor Atual"].mean()
+        score_pifpaf = df_filtrado["Score PifPaf"].mean()
+        vantagem_media = df_filtrado["Vantagem PifPaf"].mean()
+
+        clientes_alto = len(
+            df_filtrado[df_filtrado["Potencial"] == "Alto"]
         )
 
-        # =========================
-        # GRÁFICO PARA PDF
-        # =========================
+        # GRÁFICO COMPARATIVO
+        comparativo_pdf = pd.DataFrame({
+            "Grupo": ["Fornecedor Atual", "PifPaf"],
+            "Score Médio": [score_fornecedor, score_pifpaf]
+        })
 
-        fig_pdf, ax_pdf = plt.subplots(
-            figsize=(8, 4)
-        )
+        fig_pdf, ax_pdf = plt.subplots(figsize=(8, 4))
 
-        ranking_plot = (
-            df_filtrado
-            .groupby("Concorrente")["Índice de Atraso"]
-            .mean()
-        )
-
-        ranking_plot.plot(
+        comparativo_pdf.plot(
+            x="Grupo",
+            y="Score Médio",
             kind="bar",
-            ax=ax_pdf
+            ax=ax_pdf,
+            legend=False
         )
 
-        plt.title("Média de Atraso por Empresa")
+        plt.title("Comparativo Médio — Fornecedor Atual x PifPaf")
+        plt.ylabel("Score Médio")
+        plt.ylim(0, 5)
         plt.tight_layout()
-        plt.savefig("grafico_atraso.png")
+        plt.savefig("grafico_comparativo.png")
         plt.close()
-
-        # =========================
-        # DOCUMENTO PDF
-        # =========================
 
         pdf = SimpleDocTemplate(
             "relatorio_executivo.pdf",
@@ -2139,98 +2135,56 @@ with aba_relatorio:
         elementos = []
         estilos = getSampleStyleSheet()
 
-        titulo = Paragraph(
-            """
-            <font size=20>
-            <b>RELATÓRIO EXECUTIVO — EA INTELLIGENCE</b>
-            </font>
-            """,
-            estilos["Title"]
+        elementos.append(
+            Paragraph(
+                "<font size=20><b>RELATÓRIO EXECUTIVO — EA INTELLIGENCE</b></font>",
+                estilos["Title"]
+            )
         )
 
-        elementos.append(titulo)
         elementos.append(Spacer(1, 20))
 
-        subtitulo = Paragraph(
-            """
-            EA Comercial Intelligence<br/>
-            CRM Analítico Comercial e Operacional
-            """,
-            estilos["BodyText"]
-        )
-
-        elementos.append(subtitulo)
-        elementos.append(Spacer(1, 25))
-
-        # =========================
-        # RESUMO EXECUTIVO
-        # =========================
-
         elementos.append(
             Paragraph(
-                "<b>Resumo Executivo</b>",
-                estilos["Heading2"]
-            )
-        )
-
-        elementos.append(Spacer(1, 10))
-
-        if "analises" in globals() and len(analises) > 0:
-
-            resumo_texto = "<br/><br/>".join(analises)
-
-        else:
-
-            resumo_texto = (
-                "Relatório gerado automaticamente com base nos dados filtrados "
-                "do dashboard EA Intelligence."
-            )
-
-        elementos.append(
-            Paragraph(
-                resumo_texto,
+                "EA Comercial Intelligence<br/>CRM Analítico Comercial e Operacional",
                 estilos["BodyText"]
             )
         )
 
-        elementos.append(Spacer(1, 20))
-
-                # =========================
-        # KPIs DO RELATÓRIO
-        # =========================
+        elementos.append(Spacer(1, 25))
 
         elementos.append(
-            Paragraph(
-                "<b>Indicadores Estratégicos</b>",
-                estilos["Heading2"]
-            )
+            Paragraph("<b>Resumo Executivo</b>", estilos["Heading2"])
         )
 
-        elementos.append(Spacer(1, 10))
+        resumo_texto = (
+            f"Foram analisados {total_clientes} clientes na base filtrada. "
+            f"O score médio do fornecedor atual foi {round(score_fornecedor, 2)}, "
+            f"enquanto o score médio da PifPaf foi {round(score_pifpaf, 2)}. "
+            f"A vantagem média da PifPaf foi de {round(vantagem_media, 2)} ponto(s). "
+            "O relatório compara a percepção do cliente sobre o fornecedor atual "
+            "com a percepção da PifPaf, considerando qualidade, entrega, atendimento, "
+            "preço, variedade e negociação."
+        )
 
-        total_clientes = len(df_filtrado)
-        atraso_medio = df_filtrado["Índice de Atraso"].mean()
-        ruptura_media = df_filtrado["Itens com Ruptura"].mean()
-        qualidade_media = df_filtrado["Qualidade"].mean()
+        elementos.append(Paragraph(resumo_texto, estilos["BodyText"]))
+        elementos.append(Spacer(1, 20))
 
-        clientes_alto = len(
-            df_filtrado[df_filtrado["Potencial"] == "Alto"]
+        elementos.append(
+            Paragraph("<b>Indicadores Estratégicos</b>", estilos["Heading2"])
         )
 
         dados_kpi = [
             ["Indicador", "Resultado"],
             ["Total de Clientes", total_clientes],
-            ["Atraso Médio", round(atraso_medio, 2)],
-            ["Ruptura Média", round(ruptura_media, 2)],
-            ["Qualidade Média", round(qualidade_media, 2)],
+            ["Score Fornecedor Atual", round(score_fornecedor, 2)],
+            ["Score PifPaf", round(score_pifpaf, 2)],
+            ["Vantagem Média PifPaf", round(vantagem_media, 2)],
             ["Clientes Alto Potencial", clientes_alto],
             ["Volume Mensal", f"R$ {volume_total:,.0f}"]
         ]
 
-        tabela_kpi = Table(
-            dados_kpi,
-            colWidths=[220, 220]
-        )
+        tabela_kpi = Table(dados_kpi, colWidths=[220, 220])
 
         tabela_kpi.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#991b1b")),
@@ -2244,22 +2198,15 @@ with aba_relatorio:
         elementos.append(tabela_kpi)
         elementos.append(Spacer(1, 20))
 
-        # =========================
-        # GRÁFICO
-        # =========================
-
         elementos.append(
-            Paragraph(
-                "<b>Análise Gráfica</b>",
-                estilos["Heading2"]
-            )
+            Paragraph("<b>Análise Gráfica</b>", estilos["Heading2"])
         )
 
         elementos.append(Spacer(1, 10))
 
         elementos.append(
             Image(
-                "grafico_atraso.png",
+                "grafico_comparativo.png",
                 width=450,
                 height=250
             )
@@ -2267,27 +2214,18 @@ with aba_relatorio:
 
         elementos.append(Spacer(1, 20))
 
-        # =========================
-        # TABELA DE CLIENTES
-        # =========================
-
         elementos.append(
-            Paragraph(
-                "<b>Clientes Prioritários</b>",
-                estilos["Heading2"]
-            )
+            Paragraph("<b>Ranking Comparativo por Cliente</b>", estilos["Heading2"])
         )
-
-        elementos.append(Spacer(1, 10))
 
         colunas_pdf = [
             "Cliente",
             "Concorrente",
             "Cidade",
-            "Índice de Atraso",
-            "Itens com Ruptura",
-            "Qualidade",
-            "Potencial"
+            "Score Fornecedor Atual",
+            "Score PifPaf",
+            "Vantagem PifPaf",
+            "Diagnóstico Comparativo"
         ]
 
         colunas_pdf_existentes = [
@@ -2295,22 +2233,23 @@ with aba_relatorio:
             if coluna in df_filtrado.columns
         ]
 
-        tabela_pdf = df_filtrado[colunas_pdf_existentes]
+        tabela_pdf = df_filtrado[colunas_pdf_existentes].copy()
 
-        dados_tabela = [
-            tabela_pdf.columns.tolist()
-        ] + tabela_pdf.values.tolist()
+        if "Vantagem PifPaf" in tabela_pdf.columns:
+            tabela_pdf = tabela_pdf.sort_values(
+                by="Vantagem PifPaf",
+                ascending=False
+            )
 
-        tabela = Table(
-            dados_tabela,
-            repeatRows=1
-        )
+        dados_tabela = [tabela_pdf.columns.tolist()] + tabela_pdf.values.tolist()
+
+        tabela = Table(dados_tabela, repeatRows=1)
 
         tabela.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#991b1b")),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 8),
+            ("FONTSIZE", (0, 0), (-1, -1), 7),
             ("GRID", (0, 0), (-1, -1), 1, colors.black),
             ("BACKGROUND", (0, 1), (-1, -1), colors.beige)
         ]))
@@ -2318,29 +2257,17 @@ with aba_relatorio:
         elementos.append(tabela)
         elementos.append(Spacer(1, 20))
 
-        # =========================
-        # CONCLUSÃO
-        # =========================
-
         elementos.append(
-            Paragraph(
-                "<b>Conclusão Estratégica</b>",
-                estilos["Heading2"]
-            )
+            Paragraph("<b>Conclusão Estratégica</b>", estilos["Heading2"])
         )
 
-        elementos.append(Spacer(1, 10))
-
-        conclusao = Paragraph(
-            """
-            O cenário analisado demonstra oportunidades relevantes para
-            fortalecimento operacional, expansão comercial e aumento da
-            competitividade da PifPaf frente aos concorrentes avaliados.
-            """,
-            estilos["BodyText"]
+        conclusao = (
+            "A análise permite identificar, cliente por cliente, onde a PifPaf "
+            "está melhor posicionada frente ao fornecedor atual e onde ainda há "
+            "necessidade de reforço comercial, operacional ou de negociação."
         )
 
-        elementos.append(conclusao)
+        elementos.append(Paragraph(conclusao, estilos["BodyText"]))
 
         pdf.build(elementos)
 
@@ -2351,5 +2278,4 @@ with aba_relatorio:
                 data=arquivo,
                 file_name="relatorio_executivo.pdf",
                 mime="application/pdf"
-
             )
