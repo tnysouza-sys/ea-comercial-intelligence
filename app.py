@@ -984,24 +984,50 @@ with aba_operacao:
         unsafe_allow_html=True
     )
 
-    comparativo_score = pd.DataFrame({
-        "Grupo": [
-            "Fornecedor Atual",
-            "PifPaf"
-        ],
-        "Score Médio": [
-            df_filtrado["Score Fornecedor Atual"].mean(),
-            df_filtrado["Score PifPaf"].mean()
-        ]
-    })
+comparativo_score = pd.DataFrame({
+
+    "Indicador": [
+        "Preço",
+        "Qualidade",
+        "Entrega",
+        "Atendimento",
+        "Variedade",
+        "Negociação"
+    ],
+
+    "Fornecedor Atual": [
+        df_filtrado["Qualidade"].mean(),
+        df_filtrado["Qualidade"].mean(),
+        df_filtrado["Frequência Entrega"].mean(),
+        df_filtrado["Atendimento Atual"].mean(),
+        0,
+        0
+    ],
+
+    "PifPaf": [
+        df_filtrado["PifPaf Preço"].mean(),
+        df_filtrado["PifPaf Qualidade"].mean(),
+        df_filtrado["PifPaf Entrega"].mean(),
+        df_filtrado["PifPaf Atendimento"].mean(),
+        df_filtrado["PifPaf Variedade"].mean(),
+        df_filtrado["PifPaf Negociação"].mean()
+    ]
+})
+
+comparativo_melt = comparativo_score.melt(
+    id_vars="Indicador",
+    var_name="Grupo",
+    value_name="Nota"
+)
 
     fig_comp = px.bar(
-        comparativo_score,
-        x="Grupo",
-        y="Score Médio",
-        color="Grupo",
-        text="Score Médio",
-        title="Score Médio: PifPaf x Fornecedor Atual"
+        comparativo_melt,
+    	x="Indicador",
+    	y="Nota",
+    	color="Grupo",
+        barmode="group",
+    	text="Nota",
+        title="Comparativo Estratégico PifPaf x Fornecedor Atual"
     )
 
     fig_comp.update_traces(
