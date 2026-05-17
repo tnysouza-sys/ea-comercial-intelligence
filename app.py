@@ -856,7 +856,6 @@ with aba_operacao:
     col4, col5 = st.columns(2)
 
     with col4:
-
         st.markdown("### Índice de Atraso por Empresa")
 
         fig_atraso = px.bar(
@@ -868,9 +867,7 @@ with aba_operacao:
             title="Comparativo de Atraso"
         )
 
-        fig_atraso.update_traces(
-            textposition="outside"
-        )
+        fig_atraso.update_traces(textposition="outside")
 
         fig_atraso.update_layout(
             height=420,
@@ -879,24 +876,16 @@ with aba_operacao:
             yaxis_title="Índice de Atraso",
             yaxis=dict(range=[0, 5.5]),
             template="plotly_dark",
-
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-
             font=dict(color="white"),
         )
 
         st.markdown('<div class="ea-card">', unsafe_allow_html=True)
-
-        st.plotly_chart(
-            fig_atraso,
-            use_container_width=True
-        )
-
+        st.plotly_chart(fig_atraso, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-       with col5:
-
+    with col5:
         st.markdown("### Qualidade da Entrega")
 
         fig_qualidade = px.bar(
@@ -908,9 +897,7 @@ with aba_operacao:
             title="Comparativo de Qualidade"
         )
 
-        fig_qualidade.update_traces(
-            textposition="outside"
-        )
+        fig_qualidade.update_traces(textposition="outside")
 
         fig_qualidade.update_layout(
             height=420,
@@ -925,12 +912,7 @@ with aba_operacao:
         )
 
         st.markdown('<div class="ea-card">', unsafe_allow_html=True)
-
-        st.plotly_chart(
-            fig_qualidade,
-            use_container_width=True
-        )
-
+        st.plotly_chart(fig_qualidade, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("---")
@@ -949,9 +931,7 @@ with aba_operacao:
         title="Comparativo de Rupturas"
     )
 
-    fig_ruptura.update_traces(
-        textposition="outside"
-    )
+    fig_ruptura.update_traces(textposition="outside")
 
     fig_ruptura.update_layout(
         height=420,
@@ -965,12 +945,7 @@ with aba_operacao:
     )
 
     st.markdown('<div class="ea-card">', unsafe_allow_html=True)
-
-    st.plotly_chart(
-        fig_ruptura,
-        use_container_width=True
-    )
-
+    st.plotly_chart(fig_ruptura, use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("---")
@@ -990,7 +965,7 @@ with aba_operacao:
             "Negociação"
         ],
         "Fornecedor Atual": [
-            df_filtrado["Qualidade"].mean(),
+            0,
             df_filtrado["Qualidade"].mean(),
             df_filtrado["Frequência Entrega"].mean(),
             df_filtrado["Atendimento Atual"].mean(),
@@ -1040,27 +1015,27 @@ with aba_operacao:
     )
 
     st.markdown('<div class="ea-card">', unsafe_allow_html=True)
-
-    st.plotly_chart(
-        fig_comp,
-        use_container_width=True
-    )
-
+    st.plotly_chart(fig_comp, use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("### Diagnóstico por Cliente")
 
-    tabela_comparativa = df_filtrado[
-        [
-            "Cliente",
-            "Concorrente",
-            "Cidade",
-            "Score Fornecedor Atual",
-            "Score PifPaf",
-            "Vantagem PifPaf",
-            "Diagnóstico Comparativo"
-        ]
-    ].sort_values(
+    colunas_diagnostico = [
+        "Cliente",
+        "Concorrente",
+        "Cidade",
+        "Score Fornecedor Atual",
+        "Score PifPaf",
+        "Vantagem PifPaf",
+        "Diagnóstico Comparativo"
+    ]
+
+    colunas_diagnostico_existentes = [
+        coluna for coluna in colunas_diagnostico
+        if coluna in df_filtrado.columns
+    ]
+
+    tabela_comparativa = df_filtrado[colunas_diagnostico_existentes].sort_values(
         by="Vantagem PifPaf",
         ascending=False
     )
