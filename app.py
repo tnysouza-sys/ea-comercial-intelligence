@@ -2047,27 +2047,43 @@ with aba_inteligencia:
 
     st.plotly_chart(fig_funil, use_container_width=True)
 
-    # =========================
+        # =========================
     # MATRIZ DE OPORTUNIDADE
     # =========================
 
     st.markdown("---")
     st.subheader("Matriz de Oportunidade Comercial")
 
-    ranking["Score Conversão Ajustado"] = ranking["Score Conversão"].clip(lower=1)
+    ranking["Volume Mensal"] = pd.to_numeric(
+        ranking["Volume Mensal"],
+        errors="coerce"
+    ).fillna(0)
+
+    ranking["Score Conversão"] = pd.to_numeric(
+        ranking["Score Conversão"],
+        errors="coerce"
+    ).fillna(0)
+
+    ranking["Score Conversão Ajustado"] = (
+        ranking["Score Conversão"]
+        .clip(lower=1)
+    )
 
     fig_bubble = px.scatter(
         ranking,
         x="Volume Mensal",
         y="Score Conversão",
-        size="Score Conversão",
+        size="Score Conversão Ajustado",
         color="Concorrente",
         hover_name="Cliente",
         template="plotly_dark",
         title="Volume mensal x Score de conversão"
     )
 
-    st.plotly_chart(fig_bubble, use_container_width=True)
+    st.plotly_chart(
+        fig_bubble,
+        use_container_width=True
+    )
 
     # =========================
     # RANKING DE CONVERSÃO
