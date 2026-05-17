@@ -1013,7 +1013,6 @@ comparativo_score = pd.DataFrame({
         df_filtrado["PifPaf Negociação"].mean()
     ]
 })
-
 comparativo_melt = comparativo_score.melt(
     id_vars="Indicador",
     var_name="Grupo",
@@ -1029,6 +1028,7 @@ comparativo_melt = comparativo_score.melt(
             text="Nota",
             title="Comparativo Estratégico PifPaf x Fornecedor Atual"
         )
+
     fig_comp.update_traces(
         texttemplate="%{text:.2f}",
         textposition="outside"
