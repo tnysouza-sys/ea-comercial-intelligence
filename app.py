@@ -434,7 +434,8 @@ def extrair_dados_pedido(arquivo_pdf):
 st.set_page_config(
     page_title="EA Comercial Intelligence",
     page_icon="📊",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
 criar_tabelas()
