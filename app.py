@@ -2487,67 +2487,77 @@ with aba_funil_comercial:
 
     st.subheader("➕ Adicionar Cliente ao Funil")
 
-    with st.form("pipeline_form"):
+    if df_clientes_pipeline.empty:
+        st.info("Nenhum cliente cadastrado ainda. Importe um pedido em PDF ou cadastre clientes primeiro.")
 
-        cliente_nome = st.selectbox(
-            "Cliente",
-            df_clientes_pipeline["nome"].unique()
-        )
+    else:
+        with st.form("pipeline_form"):
 
-        dados_pipeline = df_clientes_pipeline[
-            df_clientes_pipeline["nome"] == cliente_nome
-        ].iloc[0]
+            cliente_nome = st.selectbox(
+                "Cliente",
+                df_clientes_pipeline["nome"].dropna().unique()
+            )
 
-        etapa = st.selectbox(
-            "Etapa Comercial",
-            [
-                "Lead",
-                "Contato",
-                "Negociação",
-                "Fechado",
-                "Pós-venda"
+            dados_filtrados = df_clientes_pipeline[
+                df_clientes_pipeline["nome"] == cliente_nome
             ]
-        )
 
-        responsavel = st.text_input(
-            "Responsável",
-            value="Euler Souza"
-        )
+            etapa = st.selectbox(
+                "Etapa Comercial",
+                [
+                    "Lead",
+                    "Contato",
+                    "Negociação",
+                    "Fechado",
+                    "Pós-venda"
+                ]
+            )
 
-        observacao = st.text_area(
-            "Observações Comerciais"
-        )
+            responsavel = st.text_input(
+                "Responsável",
+                value="Euler Souza"
+            )
 
-        salvar_pipeline = st.form_submit_button(
-            "Salvar no Funil"
-        )
+            observacao = st.text_area(
+                "Observações Comerciais"
+            )
 
-        if salvar_pipeline:
+            salvar_pipeline = st.form_submit_button(
+                "Salvar no Funil"
+            )
 
-            cursor = conn.cursor()
+            if salvar_pipeline:
 
-            cursor.execute("""
-                INSERT INTO pipeline (
-                    codigo_cliente,
-                    cliente,
-                    etapa,
-                    responsavel,
-                    observacao,
-                    data_atualizacao
-                )
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (
-                dados_pipeline["codigo_cliente"],
-                cliente_nome,
-                etapa,
-                responsavel,
-                observacao,
-                datetime.now().strftime("%d/%m/%Y %H:%M")
-            ))
+                if dados_filtrados.empty:
+                    st.error("Cliente não encontrado. Atualize a página e tente novamente.")
 
-            conn.commit()
+                else:
+                    dados_pipeline = dados_filtrados.iloc[0]
 
-            st.success("Cliente adicionado ao funil!")
+                    cursor = conn.cursor()
+
+                    cursor.execute("""
+                        INSERT INTO pipeline (
+                            codigo_cliente,
+                            cliente,
+                            etapa,
+                            responsavel,
+                            observacao,
+                            data_atualizacao
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    """, (
+                        dados_pipeline["codigo_cliente"],
+                        cliente_nome,
+                        etapa,
+                        responsavel,
+                        observacao,
+                        datetime.now().strftime("%d/%m/%Y %H:%M")
+                    ))
+
+                    conn.commit()
+
+                    st.success("Cliente adicionado ao funil!")
 
     st.markdown("---")
 
@@ -2564,34 +2574,19 @@ with aba_funil_comercial:
         col1, col2, col3, col4, col5 = st.columns(5)
 
         with col1:
-            st.metric(
-                "Leads",
-                len(df_pipeline[df_pipeline["etapa"] == "Lead"])
-            )
+            st.metric("Leads", len(df_pipeline[df_pipeline["etapa"] == "Lead"]))
 
         with col2:
-            st.metric(
-                "Contato",
-                len(df_pipeline[df_pipeline["etapa"] == "Contato"])
-            )
+            st.metric("Contato", len(df_pipeline[df_pipeline["etapa"] == "Contato"]))
 
         with col3:
-            st.metric(
-                "Negociação",
-                len(df_pipeline[df_pipeline["etapa"] == "Negociação"])
-            )
+            st.metric("Negociação", len(df_pipeline[df_pipeline["etapa"] == "Negociação"]))
 
         with col4:
-            st.metric(
-                "Fechados",
-                len(df_pipeline[df_pipeline["etapa"] == "Fechado"])
-            )
+            st.metric("Fechados", len(df_pipeline[df_pipeline["etapa"] == "Fechado"]))
 
         with col5:
-            st.metric(
-                "Pós-venda",
-                len(df_pipeline[df_pipeline["etapa"] == "Pós-venda"])
-            )
+            st.metric("Pós-venda", len(df_pipeline[df_pipeline["etapa"] == "Pós-venda"]))
 
         st.markdown("---")
 
@@ -2617,8 +2612,6 @@ with aba_funil_comercial:
         st.info("Nenhum cliente no funil ainda.")
 
     conn.close()
-
-with aba_concorrencia:
 
     # =========================
     # RANKING DE QUALIDADE
