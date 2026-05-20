@@ -46,7 +46,7 @@ load_dotenv()
 # =========================
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_NAME = os.path.join(BASE_DIR, "data", "crm_pedidos.db")
+DB_NAME = "crm_pedidos.db"
 
 def conectar():
     return sqlite3.connect(DB_NAME)
