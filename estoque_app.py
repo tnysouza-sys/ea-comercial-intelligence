@@ -115,6 +115,9 @@ def salvar_estoque_no_banco(df_base, nome_arquivo, aba_origem):
     conn = conectar()
     cursor = conn.cursor()
 
+    cursor.execute("DELETE FROM estoque_diario")
+    conn.commit()
+
     data_importacao = datetime.now().strftime("%d/%m/%Y %H:%M")
 
     for _, row in df_base.iterrows():
