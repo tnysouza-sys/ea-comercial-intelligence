@@ -16,22 +16,64 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# =========================
+# LOGIN SIMPLES
+# =========================
+
+USUARIOS = {
+    "euler": "123456",
+    "estoque": "123456",
+    "vendas": "123456"
+}
+
+if "logado_estoque" not in st.session_state:
+    st.session_state.logado_estoque = False
+
+if not st.session_state.logado_estoque:
+    st.title("🔐 Login Estoque EA CRM")
+
+    usuario = st.text_input("Usuário")
+    senha = st.text_input("Senha", type="password")
+
+    if st.button("Entrar"):
+        if usuario in USUARIOS and senha == USUARIOS[usuario]:
+            st.session_state.logado_estoque = True
+            st.session_state.usuario_estoque = usuario
+            st.rerun()
+        else:
+            st.error("Usuário ou senha incorretos.")
+
+    st.stop()
+
+st.sidebar.success(f"Usuário: {st.session_state.usuario_estoque}")
+
+if st.sidebar.button("Sair"):
+    st.session_state.logado_estoque = False
+    st.rerun()
+
 st.title("📦 Estoque Diário")
 st.caption("Consulta rápida para celular")
 
 conn = conectar()
 
-df_estoque = pd.read_sql_query("""
-    SELECT
-        data_importacao,
-        centro,
-        material,
-        descricao,
-        categoria,
-        estoque_total
-    FROM estoque_diario
-    ORDER BY descricao
-""", conn)
+try:
+
+    df_estoque = pd.read_sql_query("""
+        SELECT
+            data_importacao,
+            centro,
+            material,
+            descricao,
+            categoria,
+            estoque_total
+        FROM estoque_diario
+        ORDER BY descricao
+    """, conn)
+
+except:
+
+    st.warning("Nenhum estoque importado ainda.")
+    st.stop()
 
 conn.close()
 
