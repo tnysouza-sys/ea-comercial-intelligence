@@ -516,90 +516,16 @@ with aba_importar:
 
             colunas_exibicao = list(dict.fromkeys(colunas_exibicao))
 
-# =========================
-# CARDS MOBILE
-# =========================
-
-for _, row in df_exibir.iterrows():
-
-    estoque_cor = "#22c55e"
-
-    if row["Estoque"] <= 0:
-        estoque_cor = "#ef4444"
-
-    st.markdown(
-        f"""
-        <div style="
-            background: linear-gradient(145deg,#111827,#0f172a);
-            border:1px solid rgba(255,255,255,0.08);
-            border-radius:18px;
-            padding:18px;
-            margin-bottom:14px;
-            box-shadow:0 6px 18px rgba(0,0,0,0.25);
-        ">
-
-            <div style="
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-                margin-bottom:10px;
-            ">
-
-                <div style="
-                    font-size:15px;
-                    color:#94a3b8;
-                    font-weight:700;
-                ">
-                    {row["Centro"]}
-                </div>
-
-                <div style="
-                    background:{estoque_cor};
-                    color:white;
-                    padding:6px 12px;
-                    border-radius:999px;
-                    font-size:14px;
-                    font-weight:800;
-                ">
-                    {row["Estoque"]}
-                </div>
-
-            </div>
-
-            <div style="
-                font-size:17px;
-                font-weight:800;
-                color:white;
-                line-height:1.3;
-                margin-bottom:8px;
-            ">
-                {row["Produto"]}
-            </div>
-
-            <div style="
-                color:#38bdf8;
-                font-size:15px;
-                font-weight:700;
-            ">
-                Código: {row["Código"]}
-            </div>
-
-            <div style="
-                margin-top:10px;
-                color:#cbd5e1;
-                font-size:14px;
-            ">
-                Categoria: {row["Categoria"]}
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+            st.dataframe(
+                df_resultado[colunas_exibicao],
+                use_container_width=True,
+                hide_index=True
+            )
 
         except Exception as erro:
             st.error("Erro ao ler a planilha de estoque.")
             st.exception(erro)
+
 
 with aba_consultar:
 
@@ -647,10 +573,7 @@ with aba_consultar:
     )
 
     categorias_salvas = sorted(
-        df_ultimo["categoria"]
-        .dropna()
-        .astype(str)
-        .unique()
+        df_ultimo["categoria"].dropna().astype(str).unique()
     )
 
     categoria_salva = st.selectbox(
@@ -692,8 +615,84 @@ with aba_consultar:
         "estoque_total": "Estoque"
     })
 
-    st.dataframe(
-        df_exibir,
-        use_container_width=True,
-        hide_index=True
-    )
+    for _, row in df_exibir.iterrows():
+
+        estoque_cor = "#22c55e"
+
+        try:
+            estoque_valor = float(row["Estoque"])
+        except:
+            estoque_valor = 0
+
+        if estoque_valor <= 0:
+            estoque_cor = "#ef4444"
+
+        st.markdown(
+            f"""
+            <div style="
+                background: linear-gradient(145deg,#111827,#0f172a);
+                border:1px solid rgba(255,255,255,0.08);
+                border-radius:18px;
+                padding:18px;
+                margin-bottom:14px;
+                box-shadow:0 6px 18px rgba(0,0,0,0.25);
+            ">
+
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                    margin-bottom:10px;
+                ">
+
+                    <div style="
+                        font-size:15px;
+                        color:#94a3b8;
+                        font-weight:700;
+                    ">
+                        {row["Centro"]}
+                    </div>
+
+                    <div style="
+                        background:{estoque_cor};
+                        color:white;
+                        padding:6px 12px;
+                        border-radius:999px;
+                        font-size:14px;
+                        font-weight:800;
+                    ">
+                        {row["Estoque"]}
+                    </div>
+
+                </div>
+
+                <div style="
+                    font-size:17px;
+                    font-weight:800;
+                    color:white;
+                    line-height:1.3;
+                    margin-bottom:8px;
+                ">
+                    {row["Produto"]}
+                </div>
+
+                <div style="
+                    color:#38bdf8;
+                    font-size:15px;
+                    font-weight:700;
+                ">
+                    Código: {row["Código"]}
+                </div>
+
+                <div style="
+                    margin-top:10px;
+                    color:#cbd5e1;
+                    font-size:14px;
+                ">
+                    Categoria: {row["Categoria"]}
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
