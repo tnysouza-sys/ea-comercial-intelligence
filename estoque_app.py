@@ -6,6 +6,10 @@ import json
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+# =========================
+# CONFIGURAÇÃO DO BANCO
+# =========================
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_NAME = os.path.join(BASE_DIR, "crm_pedidos.db")
 
@@ -69,6 +73,9 @@ def preparar_estoque(df_base):
         ["Centro", "CD", "Unidade"]
     )
 
+    # =========================
+    # ESTOQUE DO DIA
+    # =========================
     hoje = datetime.now(ZoneInfo("America/Sao_Paulo"))
 
     meses_pt = {
@@ -80,14 +87,15 @@ def preparar_estoque(df_base):
     data_pt = f"{hoje.strftime('%d')}.{meses_pt[hoje.strftime('%m')]}"
 
     possiveis_datas_hoje = [
-        data_pt,
-        hoje.strftime("%d/%m"),
-        hoje.strftime("%d-%m"),
-        hoje.strftime("%d.%m"),
+        data_pt,                  # exemplo: 21.mai
+        hoje.strftime("%d/%m"),   # exemplo: 21/05
+        hoje.strftime("%d-%m"),   # exemplo: 21-05
+        hoje.strftime("%d.%m"),   # exemplo: 21.05
     ]
 
     coluna_total = identificar_coluna(df_base, possiveis_datas_hoje)
 
+    # Se não encontrar a coluna da data do dia, usa Total como reserva
     if coluna_total is None:
         coluna_total = identificar_coluna(
             df_base,
@@ -136,6 +144,7 @@ def salvar_estoque_no_banco(df_base, nome_arquivo, aba_origem):
     conn = conectar()
     cursor = conn.cursor()
 
+    # Substitui o estoque anterior pelo estoque novo
     cursor.execute("DELETE FROM estoque_diario")
     conn.commit()
 
@@ -174,6 +183,10 @@ def salvar_estoque_no_banco(df_base, nome_arquivo, aba_origem):
     return data_importacao
 
 
+# =========================
+# CONFIG STREAMLIT
+# =========================
+
 st.set_page_config(
     page_title="Estoque EA CRM",
     page_icon="📦",
@@ -182,6 +195,10 @@ st.set_page_config(
 )
 
 criar_tabela_estoque()
+
+# =========================
+# CSS PREMIUM
+# =========================
 
 st.markdown("""
 <style>
@@ -370,10 +387,15 @@ input, textarea, div[data-baseweb="select"] > div {
 </style>
 """, unsafe_allow_html=True)
 
+
+# =========================
+# LOGIN SIMPLES
+# =========================
+
 USUARIOS = {
-    "euler": "123456",
-    "estoque": "123456",
-    "vendas": "123456"
+    "euler": "EA@2026crm",
+    "estoque": "Estoque@2026",
+    "vendas": "Vendas@2026"
 }
 
 if "logado_estoque" not in st.session_state:
@@ -398,6 +420,11 @@ if not st.session_state.logado_estoque:
 
     st.stop()
 
+
+# =========================
+# SIDEBAR
+# =========================
+
 st.sidebar.markdown("## EA Comercial")
 st.sidebar.markdown("### Intelligence")
 st.sidebar.success(f"Usuário: {st.session_state.usuario_estoque}")
@@ -405,6 +432,11 @@ st.sidebar.success(f"Usuário: {st.session_state.usuario_estoque}")
 if st.sidebar.button("Sair"):
     st.session_state.logado_estoque = False
     st.rerun()
+
+
+# =========================
+# TOPO
+# =========================
 
 st.markdown("""
 <div class="premium-header">
@@ -415,10 +447,16 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+
 aba_consultar, aba_importar = st.tabs([
     "Consultar Estoque",
     "Importar Estoque"
 ])
+
+
+# =========================
+# ABA IMPORTAR
+# =========================
 
 with aba_importar:
 
@@ -475,7 +513,7 @@ with aba_importar:
             col1, col2, col3, col4 = st.columns(4)
 
             col1.metric("Produtos", len(df_estoque))
-            col2.metric("Estoque Total", f'{df_estoque["_estoque_total"].sum():,.2f}')
+            col2.metric("Estoque Total", f'{df_estoque["_estoque_total"].sum():,.0f}')
             col3.metric("Zerados", len(df_estoque[df_estoque["_estoque_total"] <= 0]))
             col4.metric("Aba", aba_selecionada)
 
@@ -527,6 +565,10 @@ with aba_importar:
             st.exception(erro)
 
 
+# =========================
+# ABA CONSULTAR
+# =========================
+
 with aba_consultar:
 
     st.header("🔎 Consultar Último Estoque Salvo")
@@ -561,7 +603,7 @@ with aba_consultar:
     col1, col2, col3, col4 = st.columns(4)
 
     col1.metric("Produtos", len(df_ultimo))
-    col2.metric("Estoque Total", f"{df_ultimo['estoque_total'].sum():,.2f}")
+    col2.metric("Estoque Total", f"{df_ultimo['estoque_total'].sum():,.0f}")
     col3.metric("Zerados", len(df_ultimo[df_ultimo["estoque_total"] <= 0]))
     col4.metric("Categorias", df_ultimo["categoria"].nunique())
 
@@ -615,84 +657,9 @@ with aba_consultar:
         "estoque_total": "Estoque"
     })
 
-    for _, row in df_exibir.iterrows():
-
-        estoque_cor = "#22c55e"
-
-        try:
-            estoque_valor = float(row["Estoque"])
-        except:
-            estoque_valor = 0
-
-        if estoque_valor <= 0:
-            estoque_cor = "#ef4444"
-
-        st.markdown(
-            f"""
-            <div style="
-                background: linear-gradient(145deg,#111827,#0f172a);
-                border:1px solid rgba(255,255,255,0.08);
-                border-radius:18px;
-                padding:18px;
-                margin-bottom:14px;
-                box-shadow:0 6px 18px rgba(0,0,0,0.25);
-            ">
-
-                <div style="
-                    display:flex;
-                    justify-content:space-between;
-                    align-items:center;
-                    margin-bottom:10px;
-                ">
-
-                    <div style="
-                        font-size:15px;
-                        color:#94a3b8;
-                        font-weight:700;
-                    ">
-                        {row["Centro"]}
-                    </div>
-
-                    <div style="
-                        background:{estoque_cor};
-                        color:white;
-                        padding:6px 12px;
-                        border-radius:999px;
-                        font-size:14px;
-                        font-weight:800;
-                    ">
-                        {row["Estoque"]}
-                    </div>
-
-                </div>
-
-                <div style="
-                    font-size:17px;
-                    font-weight:800;
-                    color:white;
-                    line-height:1.3;
-                    margin-bottom:8px;
-                ">
-                    {row["Produto"]}
-                </div>
-
-                <div style="
-                    color:#38bdf8;
-                    font-size:15px;
-                    font-weight:700;
-                ">
-                    Código: {row["Código"]}
-                </div>
-
-                <div style="
-                    margin-top:10px;
-                    color:#cbd5e1;
-                    font-size:14px;
-                ">
-                    Categoria: {row["Categoria"]}
-                </div>
-
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+    # TABELA ESTÁVEL
+    st.dataframe(
+        df_exibir,
+        use_container_width=True,
+        hide_index=True
+    )
