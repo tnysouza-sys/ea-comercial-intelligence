@@ -4,6 +4,7 @@ import sqlite3
 import os
 import json
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_NAME = os.path.join(BASE_DIR, "crm_pedidos.db")
@@ -96,7 +97,9 @@ def salvar_estoque_no_banco(df_base, nome_arquivo, aba_origem):
     cursor.execute("DELETE FROM estoque_diario")
     conn.commit()
 
-    data_importacao = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    datetime.now(
+	ZoneInfo("America/Sao_Paulo")
+    ).strftime("%d/%m/%Y %H:%M:%S")
 
     for _, row in df_base.iterrows():
         cursor.execute("""
@@ -146,10 +149,10 @@ st.markdown("""
 }
 
 .block-container {
-    padding-top: 1.5rem;
-    padding-left: 2rem;
-    padding-right: 2rem;
-    max-width: 1300px;
+    padding-top: 1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    max-width: 100% !important;
 }
 
 h1, h2, h3, p, label, span {
@@ -292,6 +295,39 @@ input, textarea, div[data-baseweb="select"] > div {
         min-height: 48px !important;
     }
 }
+
+/* MOBILE */
+@media (max-width: 768px) {
+
+    .block-container {
+        padding-left: 0.7rem !important;
+        padding-right: 0.7rem !important;
+        max-width: 100% !important;
+    }
+
+    [data-testid="stDataFrame"] {
+        overflow-x: auto;
+        width: 100% !important;
+    }
+
+    table {
+        min-width: 900px;
+    }
+
+    [data-testid="stMetricValue"] {
+        font-size: 24px !important;
+    }
+
+    .premium-title {
+        font-size: 28px !important;
+        line-height: 1.1;
+    }
+
+    .search-box {
+        padding: 14px !important;
+    }
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -428,14 +464,22 @@ with aba_importar:
                 hide_index=True
             )
 
-            if st.button("💾 Salvar estoque diário no banco"):
-                data_importacao = salvar_estoque_no_banco(
-                    df_estoque,
-                    arquivo_estoque.name,
-                    aba_selecionada
-                )
+# SALVA AUTOMATICAMENTE APÓS CARREGAR A PLANILHA
+chave_upload = f"{arquivo_estoque.name}_{aba_selecionada}"
 
-                st.success(f"Estoque salvo com sucesso em {data_importacao}.")
+if st.session_state.get("ultimo_estoque_salvo") != chave_upload:
+
+    data_importacao = salvar_estoque_no_banco(
+        df_estoque,
+        arquivo_estoque.name,
+        aba_selecionada
+    )
+
+    st.session_state["ultimo_estoque_salvo"] = chave_upload
+
+    st.success(f"Estoque substituído e salvo automaticamente em {data_importacao}.")
+else:
+    st.info("Este estoque já foi salvo nesta sessão.")
 
         except Exception as erro:
             st.error("Erro ao ler a planilha de estoque.")
