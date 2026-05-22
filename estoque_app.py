@@ -49,11 +49,50 @@ def preparar_estoque(df_base):
     df_base.columns = df_base.columns.astype(str).str.strip()
     df_base = df_base.dropna(how="all")
 
-    coluna_material = identificar_coluna(df_base, ["Material", "Codigo", "Código", "Cod Material", "Código Material"])
-    coluna_descricao = identificar_coluna(df_base, ["Texto breve de material", "Produto", "Descrição", "Descricao", "Material Descrição"])
-    coluna_categoria = identificar_coluna(df_base, ["Categorias", "Categoria", "Grupo", "Linha"])
-    coluna_centro = identificar_coluna(df_base, ["Centro", "CD", "Unidade"])
-    coluna_total = identificar_coluna(df_base, ["Total", "Estoque", "Estoque Total", "Saldo", "Qtd", "Quantidade"])
+    coluna_material = identificar_coluna(
+        df_base,
+        ["Material", "Codigo", "Código", "Cod Material", "Código Material"]
+    )
+
+    coluna_descricao = identificar_coluna(
+        df_base,
+        ["Texto breve de material", "Produto", "Descrição", "Descricao", "Material Descrição"]
+    )
+
+    coluna_categoria = identificar_coluna(
+        df_base,
+        ["Categorias", "Categoria", "Grupo", "Linha"]
+    )
+
+    coluna_centro = identificar_coluna(
+        df_base,
+        ["Centro", "CD", "Unidade"]
+    )
+
+    hoje = datetime.now(ZoneInfo("America/Sao_Paulo"))
+
+    meses_pt = {
+        "01": "jan", "02": "fev", "03": "mar", "04": "abr",
+        "05": "mai", "06": "jun", "07": "jul", "08": "ago",
+        "09": "set", "10": "out", "11": "nov", "12": "dez"
+    }
+
+    data_pt = f"{hoje.strftime('%d')}.{meses_pt[hoje.strftime('%m')]}"
+
+    possiveis_datas_hoje = [
+        data_pt,
+        hoje.strftime("%d/%m"),
+        hoje.strftime("%d-%m"),
+        hoje.strftime("%d.%m"),
+    ]
+
+    coluna_total = identificar_coluna(df_base, possiveis_datas_hoje)
+
+    if coluna_total is None:
+        coluna_total = identificar_coluna(
+            df_base,
+            ["Total", "Estoque", "Estoque Total", "Saldo", "Qtd", "Quantidade"]
+        )
 
     if coluna_material is None:
         df_base["Material"] = ""
@@ -79,7 +118,10 @@ def preparar_estoque(df_base):
     df_base["_descricao"] = df_base[coluna_descricao].astype(str)
     df_base["_categoria"] = df_base[coluna_categoria].astype(str)
     df_base["_centro"] = df_base[coluna_centro].astype(str)
-    df_base["_estoque_total"] = pd.to_numeric(df_base[coluna_total], errors="coerce").fillna(0)
+    df_base["_estoque_total"] = pd.to_numeric(
+        df_base[coluna_total],
+        errors="coerce"
+    ).fillna(0)
 
     return df_base, {
         "material": coluna_material,
@@ -97,8 +139,8 @@ def salvar_estoque_no_banco(df_base, nome_arquivo, aba_origem):
     cursor.execute("DELETE FROM estoque_diario")
     conn.commit()
 
-    datetime.now(
-	ZoneInfo("America/Sao_Paulo")
+    data_importacao = datetime.now(
+        ZoneInfo("America/Sao_Paulo")
     ).strftime("%d/%m/%Y %H:%M:%S")
 
     for _, row in df_base.iterrows():
@@ -296,9 +338,7 @@ input, textarea, div[data-baseweb="select"] > div {
     }
 }
 
-/* MOBILE */
 @media (max-width: 768px) {
-
     .block-container {
         padding-left: 0.7rem !important;
         padding-right: 0.7rem !important;
@@ -327,7 +367,6 @@ input, textarea, div[data-baseweb="select"] > div {
         padding: 14px !important;
     }
 }
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -416,6 +455,23 @@ with aba_importar:
 
             st.success("Estoque carregado com sucesso!")
 
+            chave_upload = f"{arquivo_estoque.name}_{aba_selecionada}"
+
+            if st.session_state.get("ultimo_estoque_salvo") != chave_upload:
+                data_importacao = salvar_estoque_no_banco(
+                    df_estoque,
+                    arquivo_estoque.name,
+                    aba_selecionada
+                )
+
+                st.session_state["ultimo_estoque_salvo"] = chave_upload
+
+                st.success(
+                    f"Estoque substituído e salvo automaticamente em {data_importacao}."
+                )
+            else:
+                st.info("Este estoque já foi salvo nesta sessão.")
+
             col1, col2, col3, col4 = st.columns(4)
 
             col1.metric("Produtos", len(df_estoque))
@@ -428,7 +484,9 @@ with aba_importar:
                 placeholder="Digite código, descrição ou categoria"
             )
 
-            categorias = sorted(df_estoque["_categoria"].dropna().astype(str).unique())
+            categorias = sorted(
+                df_estoque["_categoria"].dropna().astype(str).unique()
+            )
 
             categoria = st.selectbox("Categoria", ["Todas"] + categorias)
 
@@ -463,23 +521,6 @@ with aba_importar:
                 use_container_width=True,
                 hide_index=True
             )
-
-# SALVA AUTOMATICAMENTE APÓS CARREGAR A PLANILHA
-chave_upload = f"{arquivo_estoque.name}_{aba_selecionada}"
-
-if st.session_state.get("ultimo_estoque_salvo") != chave_upload:
-
-    data_importacao = salvar_estoque_no_banco(
-        df_estoque,
-        arquivo_estoque.name,
-        aba_selecionada
-    )
-
-    st.session_state["ultimo_estoque_salvo"] = chave_upload
-
-    st.success(f"Estoque substituído e salvo automaticamente em {data_importacao}.")
-else:
-    st.info("Este estoque já foi salvo nesta sessão.")
 
         except Exception as erro:
             st.error("Erro ao ler a planilha de estoque.")
